@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aalviro Store</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f5f7fb;color:#182033}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,#ff512f,#dd2476);padding:14px;color:#fff}
+.top{display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:23px;font-weight:900}
+.search{width:100%;padding:13px;margin-top:12px;border:0;border-radius:25px;font-size:16px}
+nav{display:flex;gap:7px;overflow:auto;margin-top:10px}
+nav button,.btn{border:0;border-radius:12px;padding:11px 15px;font-weight:bold;cursor:pointer}
+nav button{background:#ffffff25;color:#fff;white-space:nowrap}
+.container{max-width:1100px;margin:auto;padding:15px}
+.hero{background:linear-gradient(135deg,#5f2c82,#49a09d);color:#fff;border-radius:22px;padding:25px;margin-bottom:20px}
+.hero h1{margin:0 0 8px}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:15px}
+.card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 5px 20px #0001}
+.card img{width:100%;height:155px;object-fit:cover}
+.card-body{padding:12px}
+.card h3{margin:0 0 7px;font-size:16px}
+.price{font-size:20px;font-weight:900;color:#e83e2c}
+.old{text-decoration:line-through;color:#888}
+.primary{background:#ff432d;color:#fff}
+.green{background:#12a052;color:#fff}
+.dark{background:#182033;color:#fff}
+.white{background:#fff;color:#222}
+.card button{width:100%;margin-top:10px}
+.modal{display:none;position:fixed;inset:0;background:#0009;z-index:100;padding:20px;overflow:auto}
+.box{background:#fff;max-width:600px;margin:30px auto;padding:20px;border-radius:22px}
+.close{float:right;border:0;border-radius:50%;width:35px;height:35px}
+input,textarea,select{width:100%;padding:13px;border:1px solid #ddd;border-radius:10px;margin:7px 0 12px;font-size:15px}
+.cartrow{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #eee}
+.cartrow img{width:60px;height:60px;object-fit:cover;border-radius:10px}
+.qty{margin-left:auto;display:flex;gap:7px;align-items:center}
+.qty button{border:0;width:30px;height:30px;border-radius:8px}
+.total{background:#f0f3f8;padding:15px;border-radius:12px;margin-top:12px}
+.order{background:#fff;padding:14px;border-radius:15px;margin:10px 0;border-left:5px solid #ff512f;box-shadow:0 3px 12px #0001}
+.notify{position:fixed;right:15px;top:15px;z-index:999;background:#111;color:#fff;padding:18px;border-radius:15px;display:none;max-width:330px;box-shadow:0 8px 30px #0006}
+footer{background:#182033;color:white;text-align:center;padding:25px;margin-top:30px}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="top">
+<div class="logo">🛍️ Aalviro Store</div>
+<button class="btn white" onclick="openCart()">🛒 <span id="cartCount">0</span></button>
+</div>
+
+<input class="search" id="search"
+placeholder="🔎 सामान खोजें..."
+oninput="renderProducts()">
+
+<nav>
+<button onclick="category='All';renderProducts()">All</button>
+<button onclick="category='Grocery';renderProducts()">Grocery</button>
+<button onclick="category='Fashion';renderProducts()">Fashion</button>
+<button onclick="category='Electronics';renderProducts()">Electronics</button>
+<button onclick="category='Home';renderProducts()">Home</button>
+<button onclick="openOrders()">📦 Orders</button>
+<button onclick="openAdmin()">⚙️ Admin</button>
+</nav>
+</header>
+
+<main class="container">
+
+<section class="hero">
+<h1>🛍️ Aalviro Store</h1>
+<p>आपका अपना Online Store</p>
+<button class="btn white"
+onclick="document.getElementById('products').scrollIntoView()">
+Shopping शुरू करें
+</button>
+</section>
+
+<h2>🔥 Products</h2>
+<div id="products" class="products"></div>
+
+</main>
+
+<div id="notification" class="notify"></div>
+
+<!-- CART -->
+<div id="cartModal" class="modal">
+<div class="box">
+<button class="close" onclick="closeModal('cartModal')">×</button>
+<h2>🛒 Cart</h2>
+<div id="cartItems"></div>
+<div class="total">Total: ₹<b id="cartTotal">0</b></div>
+<br>
+<button class="btn primary" style="width:100%" onclick="checkout()">
+📦 Checkout
+</button>
+</div>
+</div>
+
+<!-- CHECKOUT -->
+<div id="checkoutModal" class="modal">
+<div class="box">
+<button class="close" onclick="closeModal('checkoutModal')">×</button>
+<h2>📦 Order Details</h2>
+
+<label>नाम</label>
+<input id="name" placeholder="नाम">
+
+<label>मोबाइल</label>
+<input id="phone" placeholder="10 digit mobile number">
+
+<label>Address</label>
+<textarea id="address" rows="4"
+placeholder="पूरा delivery address"></textarea>
+
+<label>Payment</label>
+<select id="payment">
+<option>Cash on Delivery</option>
+<option>UPI on Delivery</option>
+</select>
+
+<div class="total">
+Order Total: ₹<b id="checkoutTotal">0</b>
+</div>
+
+<br>
+
+<button class="btn green" style="width:100%" onclick="placeOrder()">
+✅ Order Place करें
+</button>
+</div>
+</div>
+
+<!-- ORDERS -->
+<div id="ordersModal" class="modal">
+<div class="box">
+<button class="close" onclick="closeModal('ordersModal')">×</button>
+<h2>📦 Orders</h2>
+<div id="orders"></div>
+</div>
+</div>
+
+<!-- ADMIN -->
+<div id="adminModal" class="modal">
+<div class="box">
+
+<button class="close" onclick="closeModal('adminModal')">×</button>
+
+<div id="loginBox">
+<h2>🔐 Admin Login</h2>
+<input id="pin" type="password" placeholder="Admin PIN">
+<button class="btn primary" onclick="login()">Login</button>
+</div>
+
+<div id="adminBox" style="display:none">
+
+<h2>⚙️ Admin Dashboard</h2>
+
+<button class="btn green"
+onclick="enableNotifications()">
+🔔 Notifications ON करें
+</button>
+
+<h3>➕ Product Add करें</h3>
+
+<input id="pname" placeholder="Product name">
+<input id="pprice" type="number" placeholder="Price">
+<input id="pold" type="number" placeholder="Old Price">
+<input id="pimage" placeholder="Image URL">
+
+<select id="pcat">
+<option>Grocery</option>
+<option>Fashion</option>
+<option>Electronics</option>
+<option>Home</option>
+</select>
+
+<button class="btn green"
+style="width:100%"
+onclick="addProduct()">
+➕ Add Product
+</button>
+
+<h3>📦 सभी Orders</h3>
+<div id="adminOrders"></div>
+
+</div>
+</div>
+</div>
+
+<footer>
+<b>Aalviro Store</b><br>
+आपका भरोसेमंद Online Store
+</footer>
+
+<script type="module">
+
+import {
+initializeApp
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+getDocs,
+deleteDoc,
+doc,
+updateDoc,
+onSnapshot,
+serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+import {
+getAuth,
+signInAnonymously
+} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+
+/* =================================================
+   🔥 अपना Firebase Config यहाँ डालना है
+================================================= */
+
+const firebaseConfig={
+
+apiKey:"YOUR_API_KEY",
+
+authDomain:"YOUR_PROJECT.firebaseapp.com",
+
+projectId:"aalviro-store-5bc7a",
+
+storageBucket:"YOUR_STORAGE_BUCKET",
+
+messagingSenderId:"739678310618",
+
+appId:"YOUR_APP_ID"
+
+};
+
+
+/* FIREBASE */
+
+const app=initializeApp(firebaseConfig);
+
+const db=getFirestore(app);
+
+const auth=getAuth(app);
+
+try{
+await signInAnonymously(auth);
+console.log("Firebase connected");
+}catch(e){
+console.error(e);
+alert("Firebase Authentication enable करें");
+}
+
+
+/* DATA */
+
+let products=[
+{
+id:"demo1",
+name:"Fresh Grocery Pack",
+price:299,
+old:399,
+category:"Grocery",
+image:"https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80"
+},
+{
+id:"demo2",
+name:"Premium T-Shirt",
+price:499,
+old:699,
+category:"Fashion",
+image:"https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80"
+},
+{
+id:"demo3",
+name:"Wireless Headphones",
+price:899,
+old:1299,
+category:"Electronics",
+image:"https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80"
+},
+{
+id:"demo4",
+name:"Home Organizer",
+price:349,
+old:499,
+category:"Home",
+image:"https://images.unsplash.com/photo-1558997519-83ea9252edf8?auto=format&fit=crop&w=600&q=80"
+}
+];
+
+let cart=[];
+let category="All";
+let adminLogged=false;
+let firstOrderSnapshot=true;
+
+
+/* PRODUCTS */
+
+async function loadProducts(){
+
+try{
+
+const snap=await getDocs(collection(db,"products"));
+
+if(!snap.empty){
+
+products=[];
+
+snap.forEach(x=>{
+products.push({
+id:x.id,
+...x.data()
+});
+});
+
+}
+
+}catch(e){
+console.log(e);
+}
+
+renderProducts();
+
+}
+
+loadProducts();
+
+
+window.renderProducts=function(){
+
+let q=document.getElementById("search").value.toLowerCase();
+
+let list=products.filter(p=>
+(category==="All"||p.category===category)&&
+p.name.toLowerCase().includes(q)
+);
+
+document.getElementById("products").innerHTML=list.map(p=>`
+
+<div class="card">
+
+<img src="${p.image}">
+
+<div class="card-body">
+
+<h3>${p.name}</h3>
+
+<div>
+<span class="price">₹${p.price}</span>
+<span class="old"> ₹${p.old||""}</span>
+</div>
+
+<button class="btn primary"
+onclick="addCart('${p.id}')">
+🛒 Cart में डालें
+</button>
+
+</div>
+</div>
+
+`).join("");
+
+};
+
+
+window.addCart=function(id){
+
+let p=products.find(x=>x.id===id);
+
+let item=cart.find(x=>x.id===id);
+
+if(item)item.qty++;
+else cart.push({...p,qty:1});
+
+updateCart();
+
+alert("✅ Cart में add हो गया");
+
+};
+
+
+function updateCart(){
+
+document.getElementById("cartCount").innerText=
+cart.reduce((a,b)=>a+b.qty,0);
+
+};
+
+
+function total(){
+
+return cart.reduce(
+(a,b)=>a+b.price*b.qty,0
+);
+
+};
+
+
+window.openCart=function(){
+
+document.getElementById("cartItems").innerHTML=
+
+cart.length?
+
+cart.map((p,i)=>`
+
+<div class="cartrow">
+
+<img src="${p.image}">
+
+<div>
+<b>${p.name}</b><br>
+₹${p.price} × ${p.qty}
+</div>
+
+<div class="qty">
+
+<button onclick="changeQty(${i},-1)">−</button>
+
+<b>${p.qty}</b>
+
+<button onclick="changeQty(${i},1)">+</button>
+
+</div>
+
+</div>
+
+`).join("")
+
+:
+
+"<p>🛒 Cart खाली है</p>";
+
+document.getElementById("cartTotal").innerText=total();
+
+document.getElementById("cartModal").style.display="block";
+
+};
+
+
+window.changeQty=function(i,n){
+
+cart[i].qty+=n;
+
+if(cart[i].qty<=0)
+cart.splice(i,1);
+
+updateCart();
+
+openCart();
+
+};
+
+
+window.checkout=function(){
+
+if(!cart.length){
+
+alert("Cart खाली है");
+
+return;
+
+}
+
+document.getElementById("checkoutTotal").innerText=total();
+
+closeModal("cartModal");
+
+document.getElementById("checkoutModal").style.display="block";
+
+};
+
+
+/* PLACE ORDER */
+
+window.placeOrder=async function(){
+
+let name=document.getElementById("name").value.trim();
+
+let phone=document.getElementById("phone").value.trim();
+
+let address=document.getElementById("address").value.trim();
+
+let payment=document.getElementById("payment").value;
+
+if(!name||!phone||!address){
+
+alert("सारी details भरें");
+
+return;
+
+}
+
+try{
+
+let ref=await addDoc(
+collection(db,"orders"),
+{
+
+name:name,
+
+phone:phone,
+
+address:address,
+
+payment:payment,
+
+items:cart.map(x=>({
+name:x.name,
+price:x.price,
+qty:x.qty
+})),
+
+total:total(),
+
+status:"Pending",
+
+createdAt:serverTimestamp()
+
+});
+
+cart=[];
+
+updateCart();
+
+closeModal("checkoutModal");
+
+alert(
+"🎉 Order Successfully Placed!\n\nOrder ID: "+
+ref.id
+);
+
+}catch(e){
+
+console.error(e);
+
+alert(
+"Order save नहीं हुआ। Firebase Rules और Authentication check करें।"
+);
+
+}
+
+};
+
+
+/* =================================================
+   🔔 REALTIME ADMIN ORDER WATCHER
+================================================= */
+
+function startOrderWatcher(){
+
+onSnapshot(
+collection(db,"orders"),
+snapshot=>{
+
+if(firstOrderSnapshot){
+
+firstOrderSnapshot=false;
+
+renderAdminOrders(snapshot);
+
+return;
+
+}
+
+snapshot.docChanges().forEach(change=>{
+
+if(change.type==="added"){
+
+let o=change.doc.data();
+
+showNewOrderNotification(o);
+
+}
+
+});
+
+renderAdminOrders(snapshot);
+
+},
+error=>{
+console.error("Realtime error:",error);
+}
+);
+
+}
+
+
+function showNewOrderNotification(order){
+
+let text=
+"🔔 नया Order!\n"+
+(order.name||"Customer")+
+" — ₹"+order.total;
+
+document.getElementById("notification").innerText=text;
+
+document.getElementById("notification").style.display="block";
+
+setTimeout(()=>{
+document.getElementById("notification").style.display="none";
+},7000);
+
+
+/* Browser notification */
+
+if(
+"Notification" in window &&
+Notification.permission==="granted"
+){
+
+new Notification(
+"🛍️ Aalviro Store - नया Order",
+{
+body:
+(order.name||"Customer")+
+" ने ₹"+order.total+
+" का order किया है।"
+}
+);
+
+}
+
+
+/* SOUND */
+
+try{
+
+let ctx=new AudioContext();
+
+let osc=ctx.createOscillator();
+
+let gain=ctx.createGain();
+
+osc.connect(gain);
+
+gain.connect(ctx.destination);
+
+osc.frequency.value=900;
+
+gain.gain.value=.2;
+
+osc.start();
+
+setTimeout(()=>{
+osc.stop();
+},500);
+
+}catch(e){}
+
+}
+
+
+window.enableNotifications=async function(){
+
+if(!("Notification" in window)){
+
+alert("इस browser में notification support नहीं है");
+
+return;
+
+}
+
+let p=await Notification.requestPermission();
+
+if(p==="granted"){
+
+alert("✅ Notifications ON हो गए");
+
+}else{
+
+alert("Notification permission Allow करें");
+
+}
+
+};
+
+
+/* ADMIN */
+
+window.openAdmin=function(){
+
+document.getElementById("adminModal").style.display="block";
+
+};
+
+
+window.login=function(){
+
+let pin=document.getElementById("pin").value;
+
+if(pin==="2580"){
+
+adminLogged=true;
+
+document.getElementById("loginBox").style.display="none";
+
+document.getElementById("adminBox").style.display="block";
+
+enableNotifications();
+
+}else{
+
+alert("❌ गलत PIN");
+
+}
+
+};
+
+
+window.addProduct=async function(){
+
+let name=document.getElementById("pname").value;
+
+let price=Number(document.getElementById("pprice").value);
+
+let old=Number(document.getElementById("pold").value);
+
+let image=document.getElementById("pimage").value;
+
+let cat=document.getElementById("pcat").value;
+
+if(!name||!price||!image){
+
+alert("Name, Price और Image डालें");
+
+return;
+
+}
+
+try{
+
+let ref=await addDoc(
+collection(db,"products"),
+{
+name,
+price,
+old,
+image,
+category:cat,
+createdAt:serverTimestamp()
+}
+);
+
+products.push({
+id:ref.id,
+name,
+price,
+old,
+image,
+category:cat
+});
+
+renderProducts();
+
+alert("✅ Product Added");
+
+}catch(e){
+
+console.error(e);
+
+alert("Product add नहीं हुआ");
+
+}
+
+};
+
+
+/* ADMIN ORDERS */
+
+function renderAdminOrders(snapshot){
+
+let box=document.getElementById("adminOrders");
+
+box.innerHTML="";
+
+snapshot.forEach(d=>{
+
+let o=d.data();
+
+box.innerHTML+=`
+
+<div class="order">
+
+<b>🆕 ORDER #${d.id.slice(-7)}</b>
+
+<p>👤 ${o.name}</p>
+
+<p>📞 ${o.phone}</p>
+
+<p>📍 ${o.address}</p>
+
+<p>💰 ₹${o.total}</p>
+
+<p>💳 ${o.payment}</p>
+
+<select onchange="changeStatus('${d.id}',this.value)">
+
+<option ${o.status==="Pending"?"selected":""}>
+Pending
+</option>
+
+<option ${o.status==="Confirmed"?"selected":""}>
+Confirmed
+</option>
+
+<option ${o.status==="Packed"?"selected":""}>
+Packed
+</option>
+
+<option ${o.status==="Out for Delivery"?"selected":""}>
+Out for Delivery
+</option>
+
+<option ${o.status==="Delivered"?"selected":""}>
+Delivered
+</option>
+
+<option ${o.status==="Cancelled"?"selected":""}>
+Cancelled
+</option>
+
+</select>
+
+</div>
+
+`;
+
+});
+
+}
+
+
+window.changeStatus=async function(id,status){
+
+try{
+
+await updateDoc(
+doc(db,"orders",id),
+{status}
+);
+
+alert("✅ Status updated");
+
+}catch(e){
+
+alert("Status update failed");
+
+}
+
+};
+
+
+/* CUSTOMER ORDERS */
+
+window.openOrders=async function(){
+
+document.getElementById("ordersModal").style.display="block";
+
+let box=document.getElementById("orders");
+
+box.innerHTML="Loading...";
+
+try{
+
+let snap=await getDocs(collection(db,"orders"));
+
+box.innerHTML="";
+
+snap.forEach(d=>{
+
+let o=d.data();
+
+box.innerHTML+=`
+
+<div class="order">
+
+<b>ORDER #${d.id.slice(-7)}</b>
+
+<p>👤 ${o.name}</p>
+
+<p>💰 ₹${o.total}</p>
+
+<p>📦 ${o.status}</p>
+
+</div>
+
+`;
+
+});
+
+}catch(e){
+
+box.innerHTML="Orders load नहीं हुए";
+
+}
+
+};
+
+
+/* MODAL */
+
+window.closeModal=function(id){
+
+document.getElementById(id).style.display="none";
+
+};
+
+
+/* START */
+
+updateCart();
+
+startOrderWatcher();
+
+</script>
+
+</body>
+</html>
