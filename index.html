@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aalviro Store</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6fa;color:#111827}
+button,input,textarea,select{font:inherit}
+button{border:0;border-radius:12px;padding:13px 16px;font-weight:bold;cursor:pointer}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,#e11d48,#7c3aed);color:white;padding:14px}
+.top{max-width:1100px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.logo{font-size:23px;font-weight:900}
+.nav{display:flex;gap:6px;flex-wrap:wrap}
+.nav button{background:white;color:#111}
+main{max-width:1100px;margin:auto;padding:18px}
+.hero{background:linear-gradient(135deg,#111827,#312e81);color:white;padding:30px;border-radius:25px;margin-bottom:20px}
+.hero h1{margin:0 0 10px;font-size:36px}
+.search,input,textarea,select{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:6px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.card{background:white;border-radius:20px;overflow:hidden;box-shadow:0 3px 15px #0001}
+.card img{width:100%;height:210px;object-fit:cover;background:#eee}
+.cardbody{padding:16px}
+.price{font-size:24px;font-weight:900;color:#e11d48}
+.old{text-decoration:line-through;color:#888;margin-left:8px}
+.btn{width:100%;margin-top:8px}
+.black{background:#111827;color:white}.green{background:#16a34a;color:white}
+.blue{background:#2563eb;color:white}.red{background:#dc2626;color:white}
+.orange{background:#f59e0b;color:white}.purple{background:#7c3aed;color:white}
+.modal{display:none;position:fixed;inset:0;background:#0009;z-index:100;align-items:flex-end}
+.modal.show{display:flex}
+.sheet{background:white;width:100%;max-width:800px;max-height:93vh;overflow:auto;margin:auto;border-radius:25px 25px 0 0;padding:22px}
+.close{float:right;border-radius:50%;background:#eee}
+.order{background:#f8fafc;border:1px solid #ddd;border-radius:18px;padding:16px;margin:12px 0}
+.status{display:inline-block;background:#fef3c7;padding:7px 11px;border-radius:20px;font-weight:bold}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:#eef2f7;border-radius:15px;padding:15px;text-align:center}
+.stat b{display:block;font-size:25px}
+.map{background:#eef2ff;padding:14px;border-radius:14px;margin-top:10px}
+.empty{text-align:center;padding:30px;color:#777}
+footer{background:#111827;color:white;text-align:center;padding:35px;margin-top:40px}
+#toast{position:fixed;bottom:20px;left:15px;right:15px;background:#111827;color:white;padding:15px;border-radius:12px;text-align:center;z-index:999;display:none}
+.siren{display:none;position:fixed;inset:0;background:#8b0000ee;z-index:500;align-items:center;justify-content:center;padding:20px}
+.siren.show{display:flex}
+.sirenbox{background:white;border-radius:25px;padding:30px;text-align:center;width:100%;max-width:450px}
+.sirenicon{font-size:80px}
+@media(max-width:600px){.top{align-items:flex-start}.logo{font-size:18px}.nav button{padding:8px;font-size:12px}}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="top">
+<div class="logo">🛍️ Aalviro Store</div>
+<div class="nav">
+<button onclick="openCustomerOrders()">📦 Orders</button>
+<button onclick="openCart()">🛒 <span id="cartCount">0</span></button>
+<button onclick="openLogin()">🔐 Login</button>
+<button onclick="openAdmin()">⚙️ Admin</button>
+<button onclick="openRider()">🚚 Rider</button>
+</div>
+</div>
+</header>
+
+<main>
+
+<section class="hero">
+<h1>🛍️ Aalviro Store</h1>
+<p>आपका भरोसेमंद Online Store</p>
+<p>🚚 Fast Delivery • 💵 COD • ⚡ Easy Order</p>
+</section>
+
+<input id="search" class="search" placeholder="🔎 सामान खोजें..." oninput="renderProducts()">
+
+<h2>🔥 Products</h2>
+<div id="products" class="grid"></div>
+
+</main>
+
+<footer>
+<h2>Aalviro Store</h2>
+<p>आपका भरोसेमंद Online Store</p>
+© 2026 Aalviro Store
+</footer>
+
+<div id="modal" class="modal">
+<div class="sheet">
+<button class="close" onclick="closeModal()">×</button>
+<div id="modalContent"></div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<div id="siren" class="siren">
+<div class="sirenbox">
+<div class="sirenicon">🚨</div>
+<h1>NEW ORDER!</h1>
+<h2>🔔 ORDER RECEIVED</h2>
+<p>नया Customer Order आया है।</p>
+<button class="red btn" onclick="stopSiren()">🔇 सायरन बंद करें</button>
+<button class="black btn" onclick="stopSiren();openAdmin()">📦 Order खोलें</button>
+</div>
+</div>
+
+<script type="module">
+
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+
+import {
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+signOut,
+onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+setDoc,
+doc,
+getDoc,
+getDocs,
+updateDoc,
+deleteDoc,
+query,
+where,
+onSnapshot,
+serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+
+/* ================= FIREBASE CONFIG ================= */
+
+const firebaseConfig={
+apiKey:"AIzaSyDMmg81OOUPv0_-ZkZeNZazPodV7GDn7ew",
+authDomain:"aalviro-store-5bc7a.firebaseapp.com",
+projectId:"aalviro-store-5bc7a",
+storageBucket:"aalviro-store-5bc7a.firebasestorage.app",
+messagingSenderId:"739678310618",
+appId:"1:739678310618:web:edcc916e13324771d315e3",
+measurementId:"G-N8T1TYG5TD"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+const ADMIN_EMAIL="aalamarshlan05@gmail.com";
+
+let user=null;
+let role="";
+let products=[];
+let cart=JSON.parse(localStorage.getItem("aalviroCart")||"[]");
+let gpsWatch=null;
+let soundContext=null;
+let sirenTimer=null;
+let firstAdminSnapshot=true;
+
+document.getElementById("cartCount").textContent=cart.length;
+
+
+/* ================= BASIC ================= */
+
+function toast(x){
+const t=document.getElementById("toast");
+t.textContent=x;
+t.style.display="block";
+setTimeout(()=>t.style.display="none",3000);
+}
+
+function money(x){
+return "₹"+Number(x||0).toLocaleString("en-IN");
+}
+
+function esc(x){
+return String(x||"").replace(/[&<>"']/g,m=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+}[m]));
+}
+
+window.closeModal=function(){
+document.getElementById("modal").classList.remove("show");
+};
+
+function openModal(html){
+document.getElementById("modalContent").innerHTML=html;
+document.getElementById("modal").classList.add("show");
+}
+
+
+/* ================= AUTH ================= */
+
+onAuthStateChanged(auth,async u=>{
+
+user=u;
+
+if(!u){
+role="";
+return;
+}
+
+if(u.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase()){
+role="admin";
+return;
+}
+
+try{
+const s=await getDoc(doc(db,"users",u.uid));
+role=s.exists()?s.data().role:"customer";
+}catch(e){
+role="customer";
+}
+
+});
+
+
+/* ================= CUSTOMER LOGIN ================= */
+
+window.openLogin=function(){
+
+openModal(`
+<h2>🔐 Customer Login</h2>
+
+<input id="le" type="email" placeholder="Email">
+<input id="lp" type="password" placeholder="Password">
+
+<button class="black btn" onclick="loginCustomer()">
+🔐 Login
+</button>
+
+<hr>
+
+<h3>📝 New Customer</h3>
+
+<input id="rn" placeholder="Name">
+<input id="rp" placeholder="Mobile">
+<input id="re" type="email" placeholder="Email">
+<input id="rpass" type="password" placeholder="Password">
+
+<button class="green btn" onclick="registerCustomer()">
+Create Account
+</button>
+`);
+};
+
+window.loginCustomer=async function(){
+
+try{
+await signInWithEmailAndPassword(
+auth,
+document.getElementById("le").value.trim(),
+document.getElementById("lp").value
+);
+
+closeModal();
+toast("✅ Login Successful");
+
+}catch(e){
+alert(e.message);
+}
+};
+
+window.registerCustomer=async function(){
+
+const name=document.getElementById("rn").value.trim();
+const phone=document.getElementById("rp").value.trim();
+const email=document.getElementById("re").value.trim();
+const pass=document.getElementById("rpass").value;
+
+try{
+
+const c=await createUserWithEmailAndPassword(auth,email,pass);
+
+await setDoc(doc(db,"users",c.user.uid),{
+name,
+phone,
+email,
+role:"customer",
+createdAt:serverTimestamp()
+});
+
+closeModal();
+toast("🎉 Account Created");
+
+}catch(e){
+alert(e.message);
+}
+};
+
+
+/* ================= PRODUCTS ================= */
+
+async function loadProducts(){
+
+try{
+
+const s=await getDocs(collection(db,"products"));
+
+products=s.docs.map(x=>({
+id:x.id,...x.data()
+}));
+
+renderProducts();
+
+}catch(e){
+
+document.getElementById("products").innerHTML=
+`<div class="empty">❌ ${esc(e.message)}</div>`;
+
+}
+}
+
+window.renderProducts=function(){
+
+const q=document.getElementById("search").value.toLowerCase();
+
+const arr=products.filter(p=>
+String(p.name||"").toLowerCase().includes(q)
+);
+
+document.getElementById("products").innerHTML=
+arr.map(p=>`
+
+<div class="card">
+
+${
+p.image
+?`<img src="${p.image}">`
+:`<div style="height:210px;display:flex;align-items:center;justify-content:center;font-size:80px">🛍️</div>`
+}
+
+<div class="cardbody">
+
+<h2>${esc(p.name)}</h2>
+
+<p>${esc(p.description||"")}</p>
+
+<p>
+<span class="price">${money(p.price)}</span>
+<span class="old">${money(p.oldPrice)}</span>
+</p>
+
+<p>📦 Stock: ${p.stock||0}</p>
+
+<button class="black btn"
+onclick="addCart('${p.id}')">
+🛒 Cart में डालें
+</button>
+
+</div>
+</div>
+
+`).join("")||`<div class="empty">कोई Product नहीं मिला</div>`;
+};
+
+window.addCart=function(id){
+
+const p=products.find(x=>x.id===id);
+if(!p)return;
+
+if(Number(p.stock)<=0){
+toast("❌ Out of Stock");
+return;
+}
+
+const old=cart.find(x=>x.id===id);
+
+if(old)old.qty++;
+else cart.push({
+id:p.id,
+name:p.name,
+price:Number(p.price),
+qty:1
+});
+
+saveCart();
+toast("🛒 Cart में Add हो गया");
+};
+
+function saveCart(){
+localStorage.setItem("aalviroCart",JSON.stringify(cart));
+document.getElementById("cartCount").textContent=
+cart.reduce((a,x)=>a+x.qty,0);
+}
+
+
+/* ================= CART ================= */
+
+window.openCart=function(){
+
+if(!cart.length){
+openModal("<h2>🛒 Cart</h2><div class='empty'>Cart खाली है</div>");
+return;
+}
+
+const total=cart.reduce((a,x)=>a+x.price*x.qty,0);
+
+openModal(`
+<h2>🛒 आपका Cart</h2>
+
+${cart.map((x,i)=>`
+
+<div class="order">
+<b>${esc(x.name)}</b><br>
+${money(x.price)} × ${x.qty}
+
+<div class="actions">
+<button onclick="qty(${i},-1)">−</button>
+<button>${x.qty}</button>
+<button onclick="qty(${i},1)">+</button>
+<button class="red" onclick="removeCart(${i})">🗑️</button>
+</div>
+</div>
+
+`).join("")}
+
+<h2>Total: ${money(total)}</h2>
+
+<button class="green btn" onclick="checkout()">
+📦 Checkout
+</button>
+`);
+};
+
+window.qty=function(i,n){
+
+cart[i].qty+=n;
+
+if(cart[i].qty<=0)cart.splice(i,1);
+
+saveCart();
+openCart();
+};
+
+window.removeCart=function(i){
+cart.splice(i,1);
+saveCart();
+openCart();
+};
+
+
+/* ================= CHECKOUT ================= */
+
+let customerLat=null;
+let customerLng=null;
+
+window.checkout=function(){
+
+if(!user){
+closeModal();
+openLogin();
+toast("पहले Login करें");
+return;
+}
+
+openModal(`
+
+<h2>📦 Checkout</h2>
+
+<input id="cn" placeholder="Customer Name">
+<input id="cp" placeholder="Mobile Number">
+
+<textarea id="ca"
+placeholder="पूरा Delivery Address"></textarea>
+
+<button class="blue btn"
+onclick="getLocation()">
+📍 Current Location
+</button>
+
+<p id="loc">Location नहीं ली गई</p>
+
+<select id="pay">
+<option value="COD">💵 Cash on Delivery</option>
+<option value="ONLINE">💳 Online Payment</option>
+</select>
+
+<button class="green btn"
+onclick="placeOrder()">
+✅ Order Place करें
+</button>
+
+`);
+};
+
+window.getLocation=function(){
+
+if(!navigator.geolocation){
+alert("GPS उपलब्ध नहीं है");
+return;
+}
+
+navigator.geolocation.getCurrentPosition(
+p=>{
+customerLat=p.coords.latitude;
+customerLng=p.coords.longitude;
+
+document.getElementById("loc").innerHTML=
+"✅ Location मिल गई";
+},
+()=>{
+alert("Location Permission Allow करें");
+},
+{enableHighAccuracy:true,timeout:15000}
+);
+};
+
+window.placeOrder=async function(){
+
+const name=document.getElementById("cn").value.trim();
+const phone=document.getElementById("cp").value.trim();
+const address=document.getElementById("ca").value.trim();
+const payment=document.getElementById("pay").value;
+
+if(!name||!phone||!address){
+alert("Name, Mobile और Address भरें");
+return;
+}
+
+const total=cart.reduce((a,x)=>a+x.price*x.qty,0);
+
+try{
+
+const ref=await addDoc(collection(db,"orders"),{
+
+customerId:user.uid,
+customerName:name,
+customerPhone:phone,
+address,
+
+customerLat,
+customerLng,
+
+items:cart,
+total,
+payment,
+
+status:"Pending",
+
+riderId:"",
+riderName:"",
+riderLat:null,
+riderLng:null,
+
+createdAt:serverTimestamp(),
+updatedAt:serverTimestamp()
+
+});
+
+cart=[];
+saveCart();
+
+closeModal();
+
+toast("🎉 Order Placed: "+ref.id.slice(0,8));
+
+}catch(e){
+alert("Order Error: "+e.message);
+}
+};
+
+
+/* ================= CUSTOMER ORDER HISTORY ================= */
+
+window.openCustomerOrders=function(){
+
+if(!user){
+openLogin();
+return;
+}
+
+openModal(`
+<h2>📦 My Orders</h2>
+<div id="myOrders">Loading...</div>
+`);
+
+const q=query(
+collection(db,"orders"),
+where("customerId","==",user.uid)
+);
+
+onSnapshot(q,s=>{
+
+const arr=s.docs.map(x=>({
+id:x.id,...x.data()
+}));
+
+arr.sort((a,b)=>
+(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)
+);
+
+document.getElementById("myOrders").innerHTML=
+arr.map(o=>`
+
+<div class="order">
+
+<h3>📦 ${o.id.slice(0,8)}</h3>
+
+<span class="status">${esc(o.status)}</span>
+
+<p>👤 ${esc(o.customerName)}</p>
+<p>📞 ${esc(o.customerPhone)}</p>
+<p>📍 ${esc(o.address)}</p>
+
+<h3>💰 ${money(o.total)}</h3>
+
+${
+o.riderName
+?`<p>🚚 Rider: <b>${esc(o.riderName)}</b></p>`
+:`<p>🚚 Rider अभी Assign नहीं हुआ</p>`
+}
+
+${
+o.riderLat!=null
+?`
+<div class="map">
+📍 <b>Rider Live Location</b><br><br>
+<button class="blue"
+onclick="map(${o.riderLat},${o.riderLng})">
+🗺️ Rider को Map पर देखें
+</button>
+</div>
+`
+:
+`
+<div class="map">
+📍 Rider ने अभी Live Location शुरू नहीं की।
+</div>
+`
+}
+
+${
+o.customerLat!=null
+?`
+<button class="purple btn"
+onclick="map(${o.customerLat},${o.customerLng})">
+🏠 Delivery Location
+</button>
+`
+:""
+}
+
+</div>
+
+`).join("")||"<div class='empty'>अभी कोई Order नहीं है</div>";
+
+});
+};
+
+
+/* ================= GOOGLE MAP ================= */
+
+window.map=function(lat,lng){
+
+if(lat==null||lng==null){
+toast("Location नहीं मिली");
+return;
+}
+
+window.open(
+"https://www.google.com/maps/dir/?api=1&destination="+
+lat+","+lng+"&travelmode=driving",
+"_blank"
+);
+};
+
+
+/* ================= ADMIN ================= */
+
+window.openAdmin=function(){
+
+if(!user){
+openLogin();
+return;
+}
+
+if(user.email?.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){
+alert("यह Admin account नहीं है");
+return;
+}
+
+openAdminPanel();
+};
+
+async function openAdminPanel(){
+
+openModal(`
+
+<h2>⚙️ Admin Panel</h2>
+
+<div class="stats">
+
+<div class="stat">
+<b id="ao">0</b> Orders
+</div>
+
+<div class="stat">
+<b id="as">₹0</b> Sales
+</div>
+
+<div class="stat">
+<b id="ap">0</b> Products
+</div>
+
+</div>
+
+<hr>
+
+<h2>➕ Product Add</h2>
+
+<input id="pn" placeholder="Product Name">
+<textarea id="pd" placeholder="Description"></textarea>
+
+<input id="pp" type="number" placeholder="Selling Price">
+<input id="po" type="number" placeholder="Old Price">
+<input id="ps" type="number" placeholder="Stock">
+
+<select id="pc">
+<option>Grocery</option>
+<option>Fashion</option>
+<option>Electronics</option>
+<option>Home</option>
+<option>Other</option>
+</select>
+
+<input id="pi" type="file" accept="image/*">
+
+<button class="green btn" onclick="addProduct()">
+➕ Product Add करें
+</button>
+
+<hr>
+
+<h2>📦 All Orders</h2>
+<div id="adminOrders">Loading...</div>
+
+<hr>
+
+<h2>🛍️ Products</h2>
+<div id="adminProducts"></div>
+
+<hr>
+
+<h2>🚚 Riders</h2>
+<div id="riders">Loading...</div>
+
+`);
+
+loadAdminOrders();
+loadAdminProducts();
+loadRiders();
+loadStats();
+};
+
+
+/* ================= ADD PRODUCT ================= */
+
+window.addProduct=async function(){
+
+const name=document.getElementById("pn").value.trim();
+const desc=document.getElementById("pd").value.trim();
+const price=Number(document.getElementById("pp").value);
+const oldPrice=Number(document.getElementById("po").value||price);
+const stock=Number(document.getElementById("ps").value||0);
+const category=document.getElementById("pc").value;
+const file=document.getElementById("pi").files[0];
+
+if(!name||!price){
+alert("Product Name और Price डालें");
+return;
+}
+
+let image="";
+
+if(file){
+image=await new Promise(resolve=>{
+const r=new FileReader();
+r.onload=e=>resolve(e.target.result);
+r.readAsDataURL(file);
+});
+}
+
+try{
+
+await addDoc(collection(db,"products"),{
+name,
+description:desc,
+price,
+oldPrice,
+stock,
+category,
+image,
+createdAt:serverTimestamp()
+});
+
+toast("✅ Product Added");
+
+await loadProducts();
+
+}catch(e){
+alert("Product Error: "+e.message);
+}
+};
+
+
+/* ================= ADMIN PRODUCTS ================= */
+
+async function loadAdminProducts(){
+
+const s=await getDocs(collection(db,"products"));
+
+document.getElementById("adminProducts").innerHTML=
+s.docs.map(x=>{
+
+const p=x.data();
+
+return `
+<div class="order">
+<b>${esc(p.name)}</b>
+<p>${money(p.price)} | Stock: ${p.stock||0}</p>
+
+<button class="red"
+onclick="deleteProduct('${x.id}')">
+🗑️ Delete
+</button>
+</div>
+`;
+
+}).join("");
+}
+
+window.deleteProduct=async function(id){
+
+if(!confirm("Product Delete करें?"))return;
+
+await deleteDoc(doc(db,"products",id));
+
+toast("Product Deleted");
+
+loadProducts();
+loadAdminProducts();
+};
+
+
+/* ================= ADMIN ORDERS ================= */
+
+function loadAdminOrders(){
+
+onSnapshot(collection(db,"orders"),async s=>{
+
+const arr=s.docs.map(x=>({
+id:x.id,...x.data()
+}));
+
+arr.sort((a,b)=>
+(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)
+);
+
+document.getElementById("adminOrders").innerHTML=
+arr.map(o=>`
+
+<div class="order">
+
+<h3>📦 ${o.id.slice(0,8)}</h3>
+
+<span class="status">${esc(o.status)}</span>
+
+<p>👤 <b>${esc(o.customerName)}</b></p>
+<p>📞 ${esc(o.customerPhone)}</p>
+<p>📍 ${esc(o.address)}</p>
+<p>💰 <b>${money(o.total)}</b></p>
+
+${
+o.riderName
+?`<p>🚚 Rider: ${esc(o.riderName)}</p>`
+:""
+}
+
+<select
+onchange="changeStatus('${o.id}',this.value)">
+<option value="">Change Status</option>
+<option>Accepted</option>
+<option>Preparing</option>
+<option>Assigned</option>
+<option>Pickup</option>
+<option>On The Way</option>
+<option>Delivered</option>
+<option>Cancelled</option>
+</select>
+
+<select
+onchange="assignRider('${o.id}',this.value)">
+<option value="">🚚 Rider Assign</option>
+${window._riders?.map(r=>
+`<option value="${r.id}">
+${esc(r.name)}
+</option>`
+).join("")||""}
+</select>
+
+${
+o.riderLat!=null
+?`
+<button class="blue btn"
+onclick="map(${o.riderLat},${o.riderLng})">
+📍 Rider Location
+</button>
+`
+:""
+}
+
+${
+o.customerLat!=null
+?`
+<button class="purple btn"
+onclick="map(${o.customerLat},${o.customerLng})">
+🏠 Customer Location
+</button>
+`
+:""
+}
+
+</div>
+
+`).join("")||"<div class='empty'>No Orders</div>";
+
+loadStats();
+
+});
+}
+
+window.changeStatus=async function(id,status){
+
+if(!status)return;
+
+await updateDoc(doc(db,"orders",id),{
+status,
+updatedAt:serverTimestamp()
+});
+
+toast("Status: "+status);
+};
+
+window.assignRider=async function(orderId,riderId){
+
+if(!riderId)return;
+
+const r=window._riders?.find(x=>x.id===riderId);
+
+if(!r)return;
+
+await updateDoc(doc(db,"orders",orderId),{
+riderId:r.id,
+riderName:r.name,
+status:"Assigned",
+updatedAt:serverTimestamp()
+});
+
+toast("🚚 Rider Assigned");
+};
+
+
+/* ================= RIDERS ================= */
+
+async function loadRiders(){
+
+const s=await getDocs(
+query(collection(db,"users"),where("role","==","rider"))
+);
+
+window._riders=s.docs.map(x=>({
+id:x.id,...x.data()
+}));
+
+document.getElementById("riders").innerHTML=
+window._riders.map(r=>`
+<div class="order">
+🚚 <b>${esc(r.name)}</b><br>
+📞 ${esc(r.phone||"")}<br>
+📧 ${esc(r.email)}
+</div>
+`).join("")||
+"<div class='empty'>कोई Rider नहीं है</div>";
+
+loadAdminOrders();
+}
+
+
+/* ================= RIDER LOGIN ================= */
+
+window.openRider=function(){
+
+openModal(`
+
+<h2>🚚 Rider Login</h2>
+
+<input id="rideEmail" type="email" placeholder="Rider Email">
+<input id="ridePass" type="password" placeholder="Password">
+
+<button class="black btn"
+onclick="riderLogin()">
+🚚 Rider Login
+</button>
+
+<hr>
+
+<h3>Rider Account बनाना</h3>
+
+<input id="newRN" placeholder="Rider Name">
+<input id="newRP" placeholder="Mobile">
+<input id="newRE" type="email" placeholder="Email">
+<input id="newRPass" type="password" placeholder="Password">
+
+<button class="green btn"
+onclick="createRider()">
+Create Rider
+</button>
+
+`);
+};
+
+window.createRider=async function(){
+
+const name=document.getElementById("newRN").value.trim();
+const phone=document.getElementById("newRP").value.trim();
+const email=document.getElementById("newRE").value.trim();
+const pass=document.getElementById("newRPass").value;
+
+if(!name||!email||pass.length<6){
+alert("सभी details भरें");
+return;
+}
+
+try{
+
+const c=await createUserWithEmailAndPassword(auth,email,pass);
+
+await setDoc(doc(db,"users",c.user.uid),{
+name,
+phone,
+email,
+role:"rider",
+createdAt:serverTimestamp()
+});
+
+toast("🚚 Rider Account Created");
+
+closeModal();
+
+}catch(e){
+alert(e.message);
+}
+};
+
+window.riderLogin=async function(){
+
+try{
+
+const c=await signInWithEmailAndPassword(
+auth,
+document.getElementById("rideEmail").value.trim(),
+document.getElementById("ridePass").value
+);
+
+const s=await getDoc(doc(db,"users",c.user.uid));
+
+if(!s.exists()||s.data().role!=="rider"){
+await signOut(auth);
+alert("यह Rider account नहीं है");
+return;
+}
+
+openRiderPanel();
+
+}catch(e){
+alert("Rider Login Error: "+e.message);
+}
+};
+
+
+/* ================= RIDER PANEL ================= */
+
+async function openRiderPanel(){
+
+const s=await getDocs(
+query(
+collection(db,"orders"),
+where("riderId","==",user.uid)
+)
+);
+
+const arr=s.docs.map(x=>({
+id:x.id,...x.data()
+}));
+
+openModal(`
+
+<h2>🚚 Rider Dashboard</h2>
+
+<button class="blue btn"
+onclick="startGPS()">
+📍 Start Live Location
+</button>
+
+<p id="gps">🔴 Live Location बंद है</p>
+
+<hr>
+
+<div id="riderOrders">
+
+${arr.map(o=>`
+
+<div class="order">
+
+<h3>📦 ${o.id.slice(0,8)}</h3>
+
+<span class="status">${esc(o.status)}</span>
+
+<p>👤 ${esc(o.customerName)}</p>
+<p>📞 ${esc(o.customerPhone)}</p>
+<p>📍 ${esc(o.address)}</p>
+
+<p>💰 ${money(o.total)}</p>
+
+<div class="actions">
+
+<button class="green"
+onclick="riderStatus('${o.id}','Accepted')">
+✅ Accept
+</button>
+
+<button class="orange"
+onclick="riderStatus('${o.id}','Pickup')">
+📦 Pickup
+</button>
+
+<button class="purple"
+onclick="riderStatus('${o.id}','On The Way')">
+🚚 On The Way
+</button>
+
+<button class="green"
+onclick="riderStatus('${o.id}','Delivered')">
+✅ Delivered
+</button>
+
+</div>
+
+${
+o.customerLat!=null
+?`
+<button class="blue btn"
+onclick="map(${o.customerLat},${o.customerLng})">
+🗺️ Customer तक रास्ता
+</button>
+`
+:""
+}
+
+</div>
+
+`).join("")||"<div class='empty'>कोई Order Assign नहीं है</div>"}
+
+</div>
+
+`);
+}
+
+window.riderStatus=async function(id,status){
+
+await updateDoc(doc(db,"orders",id),{
+status,
+updatedAt:serverTimestamp()
+});
+
+toast("Order: "+status);
+
+openRiderPanel();
+};
+
+
+/* ================= LIVE RIDER GPS ================= */
+
+window.startGPS=function(){
+
+if(!user){
+toast("Rider Login करें");
+return;
+}
+
+if(gpsWatch){
+toast("GPS पहले से चालू है");
+return;
+}
+
+if(!navigator.geolocation){
+alert("GPS उपलब्ध नहीं है");
+return;
+}
+
+gpsWatch=navigator.geolocation.watchPosition(
+async p=>{
+
+const lat=p.coords.latitude;
+const lng=p.coords.longitude;
+
+const el=document.getElementById("gps");
+
+if(el){
+el.innerHTML=
+"🟢 LIVE: "+
+lat.toFixed(5)+", "+
+lng.toFixed(5);
+}
+
+try{
+
+const q=query(
+collection(db,"orders"),
+where("riderId","==",user.uid)
+);
+
+const s=await getDocs(q);
+
+for(const x of s.docs){
+
+const o=x.data();
+
+if(
+o.status!=="Delivered" &&
+o.status!=="Cancelled"
+){
+
+await updateDoc(
+doc(db,"orders",x.id),
+{
+riderLat:lat,
+riderLng:lng,
+riderLocationUpdatedAt:serverTimestamp()
+}
+);
+
+}
+
+}
+
+}catch(e){
+console.error(e);
+}
+
+},
+err=>{
+alert(
+"Location Permission Allow करें"
+);
+},
+{
+enableHighAccuracy:true,
+maximumAge:3000,
+timeout:15000
+}
+);
+};
+
+
+/* ================= ADMIN STATS ================= */
+
+async function loadStats(){
+
+try{
+
+const [o,p]=await Promise.all([
+getDocs(collection(db,"orders")),
+getDocs(collection(db,"products"))
+]);
+
+let sales=0;
+
+o.forEach(x=>{
+const d=x.data();
+if(d.status!=="Cancelled")
+sales+=Number(d.total||0);
+});
+
+const a=document.getElementById("ao");
+const b=document.getElementById("as");
+const c=document.getElementById("ap");
+
+if(a)a.textContent=o.size;
+if(b)b.textContent=money(sales);
+if(c)c.textContent=p.size;
+
+}catch(e){}
+}
+
+
+/* ================= NEW ORDER SIREN ================= */
+
+function startSiren(){
+
+document.getElementById("siren").classList.add("show");
+
+if(!soundContext){
+
+try{
+soundContext=new AudioContext();
+}catch(e){}
+}
+
+playSiren();
+
+sirenTimer=setInterval(playSiren,1200);
+}
+
+function playSiren(){
+
+if(!soundContext)return;
+
+if(soundContext.state==="suspended")
+soundContext.resume();
+
+const osc=soundContext.createOscillator();
+const gain=soundContext.createGain();
+
+osc.connect(gain);
+gain.connect(soundContext.destination);
+
+osc.type="square";
+osc.frequency.value=900;
+gain.gain.value=.25;
+
+osc.start();
+
+setTimeout(()=>{
+osc.frequency.value=500;
+},400);
+
+setTimeout(()=>{
+osc.stop();
+},800);
+}
+
+window.stopSiren=function(){
+
+if(sirenTimer){
+clearInterval(sirenTimer);
+sirenTimer=null;
+}
+
+document.getElementById("siren").classList.remove("show");
+};
+
+
+/* ================= ADMIN REALTIME ORDER ================= */
+
+onAuthStateChanged(auth,u=>{
+
+if(!u)return;
+
+if(u.email?.toLowerCase()!==ADMIN_EMAIL.toLowerCase())
+return;
+
+onSnapshot(
+collection(db,"orders"),
+s=>{
+
+if(firstAdminSnapshot){
+firstAdminSnapshot=false;
+return;
+}
+
+toast("🚨 नया ORDER आया!");
+
+startSiren();
+
+if("Notification" in window &&
+Notification.permission==="granted"){
+
+new Notification(
+"Aalviro Store - नया Order",
+{
+body:"नया Customer Order आया है",
+requireInteraction:true
+}
+);
+}
+
+}
+);
+
+});
+
+
+/* ================= NOTIFICATION ================= */
+
+if("Notification" in window){
+
+Notification.requestPermission().catch(()=>{});
+
+}
+
+
+/* ================= START ================= */
+
+loadProducts();
+saveCart();
+
+</script>
+
+</body>
+</html>
