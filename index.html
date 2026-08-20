@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Food Fart Delivery</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f5f7;color:#111827}
+header{background:linear-gradient(135deg,#ff1744,#ff6d00);color:#fff;padding:15px;position:sticky;top:0;z-index:20}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.logo{font-size:21px;font-weight:800}
+button{border:0;cursor:pointer}
+.top button{padding:10px 13px;border-radius:20px;background:#fff;color:#111}
+.wrap{max-width:950px;margin:auto;padding:15px}
+.hero{background:linear-gradient(135deg,#111936,#4024a7);color:#fff;border-radius:24px;padding:25px;margin-bottom:15px}
+.hero h1{margin:0 0 8px;font-size:30px}
+.search{width:100%;padding:16px;border:0;border-radius:17px;margin:8px 0 12px;outline:0}
+.cats{display:flex;gap:8px;overflow:auto;margin-bottom:15px}
+.cats button{white-space:nowrap;background:#fff;padding:11px 16px;border-radius:22px}
+.cats button.active{background:#ff1744;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{background:#fff;border-radius:19px;padding:12px;box-shadow:0 2px 12px #0000000b}
+.pic{height:95px;border-radius:15px;background:#f1f2f5;display:flex;align-items:center;justify-content:center;font-size:52px}
+.card h3{font-size:16px;margin:9px 0 3px}
+.price{font-size:18px;font-weight:bold}
+.add,.primary{width:100%;background:#ff1744;color:#fff;padding:12px;border-radius:13px;font-weight:bold;margin-top:8px}
+.cartbar{position:fixed;bottom:12px;left:12px;right:12px;max-width:920px;margin:auto;background:#111827;color:#fff;border-radius:18px;padding:13px 16px;display:flex;justify-content:space-between;align-items:center;z-index:30}
+.cartbar button{background:#ff1744;color:#fff;border-radius:11px;padding:10px 16px}
+.panel{display:none;position:fixed;inset:0;background:#0008;z-index:100;overflow:auto}
+.sheet{background:#fff;max-width:700px;margin:25px auto 0;min-height:90vh;border-radius:25px 25px 0 0;padding:20px}
+.close{float:right;width:42px;height:42px;border-radius:50%;background:#eee}
+.field{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:6px 0;outline:0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0}
+.qty button{width:32px;height:32px;border-radius:8px;background:#eee}
+.pay{padding:15px;border:2px solid #ddd;border-radius:14px;margin:8px 0}
+.pay.selected{border-color:#ff1744;background:#fff1f3}
+.order{background:#fff;border-radius:18px;padding:15px;margin:10px 0;border:1px solid #eee}
+.status{padding:9px;border-radius:10px;background:#eef2ff;margin:8px 0}
+.hide{display:none}
+.green{background:#e9f9ee}
+.red{background:#fff0f0}
+.nav{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.nav button{padding:10px 13px;border-radius:12px;background:#eee}
+.nav button.active{background:#111827;color:#fff}
+.small{font-size:13px;color:#6b7280}
+.earning{font-size:24px;font-weight:bold}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="top">
+<div class="logo">🚚 Food Fart Delivery</div>
+<div>
+<button onclick="openOrders()">📦 Orders</button>
+<button onclick="openLogin()">🔐 Login</button>
+</div>
+</div>
+</header>
+
+<main class="wrap">
+
+<section class="hero">
+<h1>🍔 Food Fart Delivery</h1>
+<p>Fast Grocery & Food Delivery</p>
+<p>🚚 Fast Delivery • 💵 COD • 📱 UPI</p>
+</section>
+
+<input id="search" class="search"
+placeholder="🔎 सामान खोजें..."
+oninput="renderProducts()">
+
+<div id="cats" class="cats"></div>
+<div id="products" class="grid"></div>
+
+</main>
+
+<div class="cartbar">
+<div>🛒 <b id="cartCount">0</b> • ₹<b id="cartTotalBar">0</b></div>
+<button onclick="openCart()">Cart खोलें</button>
+</div>
+
+
+<!-- CART -->
+
+<div id="cartPanel" class="panel">
+<div class="sheet">
+
+<button class="close" onclick="closePanel('cartPanel')">✕</button>
+<h2>🛒 Cart</h2>
+
+<div id="cartList"></div>
+
+<hr>
+
+<h2>कुल ₹<span id="cartTotal">0</span></h2>
+
+<button class="primary" onclick="checkout()">Checkout</button>
+
+</div>
+</div>
+
+
+<!-- CHECKOUT -->
+
+<div id="checkoutPanel" class="panel">
+<div class="sheet">
+
+<button class="close" onclick="closePanel('checkoutPanel')">✕</button>
+
+<h2>📦 Order Details</h2>
+
+<input id="customerName" class="field" placeholder="आपका नाम">
+<input id="customerPhone" class="field" placeholder="मोबाइल नंबर">
+
+<textarea id="customerAddress"
+class="field"
+rows="4"
+placeholder="पूरा Delivery Address"></textarea>
+
+<button class="primary" onclick="getLocation()">
+📍 Current Location
+</button>
+
+<input id="lat" type="hidden">
+<input id="lng" type="hidden">
+
+<h3>💳 Payment</h3>
+
+<div id="codPay" class="pay selected"
+onclick="selectPayment('COD')">
+💵 Cash on Delivery
+</div>
+
+<div id="upiPay" class="pay"
+onclick="selectPayment('UPI')">
+📱 Online Payment / UPI
+</div>
+
+<p id="upiInfo"></p>
+
+<button class="primary" onclick="placeOrder()">
+🚀 Order Place करें
+</button>
+
+</div>
+</div>
+
+
+<!-- CUSTOMER ORDERS -->
+
+<div id="ordersPanel" class="panel">
+<div class="sheet">
+
+<button class="close" onclick="closePanel('ordersPanel')">✕</button>
+
+<h2>📦 My Orders</h2>
+
+<div id="ordersList"></div>
+
+</div>
+</div>
+
+
+<!-- LOGIN -->
+
+<div id="loginPanel" class="panel">
+<div class="sheet">
+
+<button class="close" onclick="closePanel('loginPanel')">✕</button>
+
+<h2>🔐 Login</h2>
+
+<input id="loginEmail" class="field" placeholder="Email">
+<input id="loginPassword" class="field" type="password" placeholder="Password">
+
+<button class="primary" onclick="loginUser()">Login</button>
+
+<hr>
+
+<h3>🚚 Rider Registration</h3>
+
+<input id="riderName" class="field" placeholder="Rider Name">
+<input id="riderPhone" class="field" placeholder="Rider Mobile">
+<input id="riderEmail" class="field" placeholder="Rider Email">
+<input id="riderPassword" class="field" type="password" placeholder="Password">
+
+<button class="primary" onclick="registerRider()">
+🚚 Rider Account बनाएं
+</button>
+
+<p class="small">
+Rider account बनने के बाद उसी email/password से login करें।
+</p>
+
+</div>
+</div>
+
+
+<!-- RIDER -->
+
+<div id="riderPanel" class="panel">
+<div class="sheet">
+
+<button class="close" onclick="closePanel('riderPanel')">✕</button>
+
+<h2>🚚 Food Fart Rider</h2>
+
+<div id="riderInfo"></div>
+
+<button class="primary" onclick="toggleOnline()">
+🟢 ONLINE / OFFLINE
+</button>
+
+<button class="primary" onclick="startLocation()">
+📍 Start Live Location
+</button>
+
+<button class="primary" onclick="stopLocation()">
+⛔ Stop Live Location
+</button>
+
+<h2>💰 Today's Earning</h2>
+<div class="earning">₹<span id="earning">0</span></div>
+
+<h2>📦 My Deliveries</h2>
+<div id="riderOrders"></div>
+
+</div>
+</div>
+
+
+<!-- ADMIN -->
+
+<div id="adminPanel" class="panel">
+<div class="sheet">
+
+<button class="close" onclick="closePanel('adminPanel')">✕</button>
+
+<h2>⚙️ Admin Dashboard</h2>
+
+<div class="nav">
+<button onclick="loadAdminOrders()">📦 Orders</button>
+<button onclick="loadRiders()">🚚 Riders</button>
+</div>
+
+<div id="adminContent"></div>
+
+</div>
+</div>
+
+
+<script type="module">
+
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+addDoc,
+doc,
+setDoc,
+getDoc,
+getDocs,
+updateDoc,
+query,
+where,
+onSnapshot,
+serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+import {
+getAuth,
+signInAnonymously,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+onAuthStateChanged,
+signOut
+}
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+
+/* ==================================================
+   YOUR FIREBASE CONFIG
+   ================================================== */
+
+const firebaseConfig={
+apiKey:"AIzaSyDMmg81OOUPv0_-ZkZeNZazPodV7GDn7ew",
+authDomain:"aalviro-store-5bc7a.firebaseapp.com",
+projectId:"aalviro-store-5bc7a",
+storageBucket:"aalviro-store-5bc7a.firebasestorage.app",
+messagingSenderId:"739678310618",
+appId:"1:739678310618:web:edcc916e13324771d315e3",
+measurementId:"G-N8T1TYG5TD"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+const auth=getAuth(app);
+
+let currentUser=null;
+let selectedPayment="COD";
+let selectedCategory="All";
+let locationWatch=null;
+let currentRole=null;
+let currentRider=null;
+
+
+/* ==================================================
+   PRODUCTS - 50
+   ================================================== */
+
+const products=[
+["आलू","🥔",40,"Vegetables"],
+["प्याज","🧅",35,"Vegetables"],
+["टमाटर","🍅",45,"Vegetables"],
+["गोभी","🥦",50,"Vegetables"],
+["गाजर","🥕",55,"Vegetables"],
+["खीरा","🥒",40,"Vegetables"],
+["बैंगन","🍆",45,"Vegetables"],
+["भिंडी","🌿",60,"Vegetables"],
+["पालक","🥬",30,"Vegetables"],
+["मटर","🫛",80,"Vegetables"],
+
+["सेब","🍎",140,"Fruits"],
+["केला","🍌",60,"Fruits"],
+["संतरा","🍊",90,"Fruits"],
+["आम","🥭",120,"Fruits"],
+["अंगूर","🍇",110,"Fruits"],
+["तरबूज","🍉",50,"Fruits"],
+["अनार","🍎",150,"Fruits"],
+["पपीता","🥭",70,"Fruits"],
+["नाशपाती","🍐",130,"Fruits"],
+["नींबू","🍋",70,"Fruits"],
+
+["चावल 1kg","🍚",70,"Grocery"],
+["आटा 1kg","🌾",55,"Grocery"],
+["चीनी 1kg","🧂",48,"Grocery"],
+["नमक 1kg","🧂",25,"Grocery"],
+["दाल 1kg","🫘",110,"Grocery"],
+["चना 1kg","🫘",90,"Grocery"],
+["राजमा 1kg","🫘",130,"Grocery"],
+["मूंग दाल 1kg","🫘",120,"Grocery"],
+["तेल 1L","🫗",140,"Grocery"],
+["बेसन 500g","🌾",65,"Grocery"],
+
+["दूध 1L","🥛",65,"Dairy"],
+["दही 500g","🥣",50,"Dairy"],
+["पनीर 200g","🧀",90,"Dairy"],
+["बटर 100g","🧈",60,"Dairy"],
+["चीज 200g","🧀",130,"Dairy"],
+
+["ब्रेड","🍞",45,"Bakery"],
+["बिस्कुट","🍪",30,"Bakery"],
+["केक","🍰",150,"Bakery"],
+["रस्क","🥨",55,"Bakery"],
+["टोस्ट","🍞",50,"Bakery"],
+
+["कोल्ड ड्रिंक","🥤",45,"Beverages"],
+["जूस","🧃",80,"Beverages"],
+["पानी बोतल","💧",20,"Beverages"],
+["चाय","☕",120,"Beverages"],
+["कॉफी","☕",180,"Beverages"],
+
+["साबुन","🧼",35,"Personal Care"],
+["शैम्पू","🧴",120,"Personal Care"],
+["टूथपेस्ट","🪥",95,"Personal Care"],
+["टिश्यू","🧻",70,"Household"],
+["डिटर्जेंट","🧺",110,"Household"]
+];
+
+const productList=products.map((x,i)=>({
+id:i+1,
+name:x[0],
+emoji:x[1],
+price:x[2],
+category:x[3]
+}));
+
+
+/* ==================================================
+   CART
+   ================================================== */
+
+let cart=JSON.parse(localStorage.getItem("foodfart_cart")||"{}");
+
+function saveCart(){
+localStorage.setItem("foodfart_cart",JSON.stringify(cart));
+updateCart();
+}
+
+function cartItems(){
+return Object.values(cart);
+}
+
+function totalItems(){
+return cartItems().reduce((a,x)=>a+x.qty,0);
+}
+
+function totalPrice(){
+return cartItems().reduce((a,x)=>a+x.price*x.qty,0);
+}
+
+window.addProduct=function(id){
+
+const p=productList.find(x=>x.id===id);
+
+if(!cart[id])cart[id]={...p,qty:0};
+
+cart[id].qty++;
+
+saveCart();
+};
+
+window.changeQty=function(id,n){
+
+if(!cart[id])return;
+
+cart[id].qty+=n;
+
+if(cart[id].qty<=0)
+delete cart[id];
+
+saveCart();
+};
+
+function updateCart(){
+
+document.getElementById("cartCount").textContent=totalItems();
+document.getElementById("cartTotalBar").textContent=totalPrice();
+
+document.getElementById("cartList").innerHTML=
+cartItems().length?
+
+cartItems().map(x=>`
+
+<div class="row">
+<div>
+<b>${x.emoji} ${x.name}</b><br>
+₹${x.price} × ${x.qty}
+</div>
+
+<div class="qty">
+<button onclick="changeQty(${x.id},-1)">−</button>
+${x.qty}
+<button onclick="changeQty(${x.id},1)">+</button>
+</div>
+</div>
+
+`).join("")
+
+:"<p>Cart खाली है।</p>";
+
+document.getElementById("cartTotal").textContent=totalPrice();
+
+}
+
+
+/* ==================================================
+   PRODUCTS
+   ================================================== */
+
+function renderCategories(){
+
+const cats=["All",...new Set(productList.map(x=>x.category))];
+
+document.getElementById("cats").innerHTML=cats.map((x,i)=>`
+
+<button class="${i===0?"active":""}"
+onclick="setCategory('${x}',this)">
+${x}
+</button>
+
+`).join("");
+
+}
+
+window.setCategory=function(cat,btn){
+
+selectedCategory=cat;
+
+document.querySelectorAll(".cats button")
+.forEach(x=>x.classList.remove("active"));
+
+btn.classList.add("active");
+
+renderProducts();
+};
+
+window.renderProducts=function(){
+
+const search=document.getElementById("search").value.toLowerCase();
+
+const list=productList.filter(x=>
+(selectedCategory==="All"||x.category===selectedCategory)&&
+x.name.toLowerCase().includes(search)
+);
+
+document.getElementById("products").innerHTML=list.map(x=>`
+
+<div class="card">
+
+<div class="pic">${x.emoji}</div>
+
+<h3>${x.name}</h3>
+
+<div class="small">${x.category}</div>
+
+<div class="price">₹${x.price}</div>
+
+<button class="add"
+onclick="addProduct(${x.id})">
++ Add
+</button>
+
+</div>
+
+`).join("");
+
+};
+
+
+/* ==================================================
+   PANELS
+   ================================================== */
+
+window.openCart=function(){
+updateCart();
+document.getElementById("cartPanel").style.display="block";
+};
+
+window.closePanel=function(id){
+document.getElementById(id).style.display="none";
+};
+
+window.openLogin=function(){
+document.getElementById("loginPanel").style.display="block";
+};
+
+window.checkout=function(){
+
+if(!cartItems().length){
+alert("पहले सामान Cart में डालें");
+return;
+}
+
+closePanel("cartPanel");
+document.getElementById("checkoutPanel").style.display="block";
+};
+
+
+/* ==================================================
+   PAYMENT
+   ================================================== */
+
+window.selectPayment=function(type){
+
+selectedPayment=type;
+
+document.getElementById("codPay")
+.classList.toggle("selected",type==="COD");
+
+document.getElementById("upiPay")
+.classList.toggle("selected",type==="UPI");
+
+if(type==="UPI"){
+
+document.getElementById("upiInfo").innerHTML=
+"📱 UPI ID: <b>7209000233@fam</b>";
+
+}else{
+
+document.getElementById("upiInfo").innerHTML="";
+
+}
+
+};
+
+
+/* ==================================================
+   LOCATION
+   ================================================== */
+
+window.getLocation=function(){
+
+if(!navigator.geolocation){
+alert("Location उपलब्ध नहीं है");
+return;
+}
+
+navigator.geolocation.getCurrentPosition(
+p=>{
+
+document.getElementById("lat").value=p.coords.latitude;
+document.getElementById("lng").value=p.coords.longitude;
+
+alert("📍 Location मिल गई");
+
+},
+()=>{
+alert("Location permission Allow करें");
+}
+);
+
+};
+
+
+/* ==================================================
+   AUTH
+   ================================================== */
+
+onAuthStateChanged(auth,async user=>{
+
+currentUser=user;
+
+if(user){
+
+try{
+
+const snap=await getDoc(doc(db,"users",user.uid));
+
+if(snap.exists()){
+
+currentRole=snap.data().role;
+currentRider=snap.data();
+
+if(currentRole==="rider")
+openRider();
+
+if(currentRole==="admin")
+openAdmin();
+
+}
+
+}catch(e){
+console.log(e);
+}
+
+}
+
+});
+
+
+/* Anonymous customer login */
+
+async function anonymousLogin(){
+
+if(auth.currentUser)return auth.currentUser;
+
+try{
+
+const result=await signInAnonymously(auth);
+
+return result.user;
+
+}catch(e){
+
+console.error(e);
+
+return null;
+
+}
+
+}
+
+
+/* ==================================================
+   PLACE ORDER
+   ================================================== */
+
+window.placeOrder=async function(){
+
+const name=document.getElementById("customerName").value.trim();
+const phone=document.getElementById("customerPhone").value.trim();
+const address=document.getElementById("customerAddress").value.trim();
+
+if(!name||!phone||!address){
+
+alert("Name, Mobile और Address भरें");
+return;
+
+}
+
+let user=await anonymousLogin();
+
+if(!user){
+
+alert("Firebase Authentication चालू नहीं है।");
+return;
+
+}
+
+const order={
+
+customerId:user.uid,
+
+customerName:name,
+
+customerPhone:phone,
+
+address:address,
+
+latitude:Number(document.getElementById("lat").value)||null,
+
+longitude:Number(document.getElementById("lng").value)||null,
+
+items:cartItems().map(x=>({
+
+name:x.name,
+price:x.price,
+qty:x.qty
+})),
+
+total:totalPrice(),
+
+paymentMethod:selectedPayment,
+
+paymentStatus:selectedPayment==="COD"?"Pending":"Pending",
+
+status:"Order Placed",
+
+riderId:null,
+
+riderName:null,
+
+riderLat:null,
+
+riderLng:null,
+
+riderEarning:0,
+
+createdAt:serverTimestamp(),
+
+updatedAt:serverTimestamp()
+
+};
+
+try{
+
+const ref=await addDoc(collection(db,"orders"),order);
+
+if(selectedPayment==="UPI"){
+
+const upi=
+"upi://pay?pa=7209000233@fam"+
+"&pn=Food%20Fart%20Delivery"+
+"&am="+totalPrice()+
+"&cu=INR"+
+"&tn=Order-"+ref.id;
+
+window.location.href=upi;
+
+}
+
+cart={};
+saveCart();
+
+closePanel("checkoutPanel");
+
+alert("✅ Order successfully placed!");
+
+openOrders();
+
+}catch(e){
+
+console.error(e);
+
+alert("Order error: "+e.message);
+
+}
+
+};
+
+
+/* ==================================================
+   CUSTOMER ORDERS
+   ================================================== */
+
+window.openOrders=function(){
+
+document.getElementById("ordersPanel").style.display="block";
+
+const user=auth.currentUser;
+
+if(!user){
+
+document.getElementById("ordersList").innerHTML=
+"<p>Firebase login तैयार हो रहा है...</p>";
+
+return;
+
+}
+
+const q=query(
+collection(db,"orders"),
+where("customerId","==",user.uid)
+);
+
+onSnapshot(q,snap=>{
+
+const arr=[];
+
+snap.forEach(d=>{
+arr.push({id:d.id,...d.data()});
+});
+
+arr.sort((a,b)=>
+(b.createdAt?.seconds||0)-
+(a.createdAt?.seconds||0)
+);
+
+document.getElementById("ordersList").innerHTML=
+
+arr.length?
+
+arr.map(o=>`
+
+<div class="order">
+
+<b>📦 Order #${o.id.substring(0,8)}</b>
+
+<div class="status">
+${o.status||"Order Placed"}
+</div>
+
+<p>💰 ₹${o.total}</p>
+
+<p>💳 ${o.paymentMethod}</p>
+
+${o.riderId?
+
+`<p>🚚 Rider: ${o.riderName||"Assigned"}</p>
+
+${
+o.status!=="Delivered"?
+
+`<button class="primary"
+onclick="openRiderMap('${o.id}')">
+📍 Rider Live Location
+</button>`
+:""
+}`
+
+:
+
+"<p>🚚 Rider अभी assign नहीं हुआ</p>"
+}
+
+</div>
+
+`).join("")
+
+:"<p>अभी कोई Order नहीं है।</p>";
+
+},e=>{
+
+document.getElementById("ordersList").innerHTML=
+`<div class="status red">
+Orders error: ${e.message}
+</div>`;
+
+});
+
+};
+
+
+/* ==================================================
+   LOGIN
+   ================================================== */
+
+window.loginUser=async function(){
+
+const email=document.getElementById("loginEmail").value.trim();
+const password=document.getElementById("loginPassword").value;
+
+if(!email||!password){
+
+alert("Email और Password भरें");
+return;
+
+}
+
+try{
+
+await signInWithEmailAndPassword(auth,email,password);
+
+closePanel("loginPanel");
+
+}catch(e){
+
+alert("Login Error: "+e.message);
+
+}
+
+};
+
+
+/* ==================================================
+   RIDER REGISTRATION
+   ================================================== */
+
+window.registerRider=async function(){
+
+const name=document.getElementById("riderName").value.trim();
+const phone=document.getElementById("riderPhone").value.trim();
+const email=document.getElementById("riderEmail").value.trim();
+const password=document.getElementById("riderPassword").value;
+
+if(!name||!phone||!email||!password){
+
+alert("Rider की पूरी जानकारी भरें");
+return;
+
+}
+
+try{
+
+const result=
+await createUserWithEmailAndPassword(
+auth,email,password
+);
+
+await setDoc(
+doc(db,"users",result.user.uid),
+{
+
+name:name,
+phone:phone,
+email:email,
+role:"rider",
+riderId:"AR"+Math.floor(100000+Math.random()*900000),
+online:false,
+earning:0,
+lat:null,
+lng:null,
+createdAt:serverTimestamp()
+
+});
+
+alert("✅ Rider account बन गया");
+
+}catch(e){
+
+alert("Rider Registration Error: "+e.message);
+
+}
+
+};
+
+
+/* ==================================================
+   RIDER DASHBOARD
+   ================================================== */
+
+async function openRider(){
+
+document.getElementById("riderPanel").style.display="block";
+
+document.getElementById("riderInfo").innerHTML=`
+
+<div class="status">
+🚚 Rider: <b>${currentRider.name}</b><br>
+ID: <b>${currentRider.riderId}</b><br>
+📱 ${currentRider.phone}
+</div>
+
+`;
+
+loadRiderOrders();
+
+}
+
+window.openRider=function(){
+
+if(currentRole==="rider")
+openRider();
+
+};
+
+
+/* ==================================================
+   RIDER ONLINE
+   ================================================== */
+
+window.toggleOnline=async function(){
+
+if(!currentUser)return;
+
+const ref=doc(db,"users",currentUser.uid);
+
+const snap=await getDoc(ref);
+
+const old=snap.exists()?snap.data().online:false;
+
+await updateDoc(ref,{
+online:!old,
+updatedAt:serverTimestamp()
+});
+
+currentRider.online=!old;
+
+alert(!old?
+"🟢 आप ONLINE हैं। Orders मिलेंगे।":
+"🔴 आप OFFLINE हैं।");
+
+};
+
+
+/* ==================================================
+   RIDER LOCATION
+   ================================================== */
+
+window.startLocation=function(){
+
+if(!currentUser){
+
+alert("Rider login करें");
+return;
+
+}
+
+if(!navigator.geolocation){
+
+alert("Location उपलब्ध नहीं");
+return;
+
+}
+
+locationWatch=navigator.geolocation.watchPosition(
+async p=>{
+
+const lat=p.coords.latitude;
+const lng=p.coords.longitude;
+
+await updateDoc(
+doc(db,"users",currentUser.uid),
+{
+lat:lat,
+lng:lng,
+locationUpdatedAt:serverTimestamp()
+}
+);
+
+},
+e=>{
+
+alert("Location permission Allow करें");
+
+},
+{
+enableHighAccuracy:true,
+maximumAge:5000,
+timeout:15000
+}
+);
+
+alert("📍 Live Location START");
+
+};
+
+window.stopLocation=function(){
+
+if(locationWatch!==null){
+
+navigator.geolocation.clearWatch(locationWatch);
+locationWatch=null;
+
+}
+
+if(currentUser){
+
+updateDoc(
+doc(db,"users",currentUser.uid),
+{
+lat:null,
+lng:null
+}
+);
+
+}
+
+alert("⛔ Live Location STOP");
+
+};
+
+
+/* ==================================================
+   RIDER ORDERS
+   ================================================== */
+
+function loadRiderOrders(){
+
+if(!currentUser)return;
+
+const q=query(
+collection(db,"orders"),
+where("riderId","==",currentUser.uid)
+);
+
+onSnapshot(q,snap=>{
+
+let earning=0;
+let html="";
+
+snap.forEach(d=>{
+
+const o={id:d.id,...d.data()};
+
+if(o.status==="Delivered")
+earning+=Number(o.riderEarning||0);
+
+html+=`
+
+<div class="order">
+
+<b>📦 #${o.id.substring(0,8)}</b>
+
+<p>👤 ${o.customerName}</p>
+<p>📞 ${o.customerPhone}</p>
+<p>📍 ${o.address}</p>
+
+<div class="status">
+${o.status}
+</div>
+
+<p>💰 Delivery Earning:
+<b>₹${o.riderEarning||0}</b>
+</p>
+
+${
+o.status==="Rider Assigned"?
+
+`<button class="primary"
+onclick="riderStatus('${o.id}','Picked Up')">
+📦 Pick Up
+</button>`
+:""
+}
+
+${
+o.status==="Picked Up"?
+
+`<button class="primary"
+onclick="riderStatus('${o.id}','On The Way')">
+🚚 On The Way
+</button>`
+:""
+}
+
+${
+o.status==="On The Way"?
+
+`<button class="primary"
+onclick="riderStatus('${o.id}','Delivered')">
+✅ Delivered
+</button>`
+:""
+}
+
+</div>
+
+`;
+
+});
+
+document.getElementById("riderOrders").innerHTML=
+html||"<p>अभी कोई delivery नहीं।</p>";
+
+document.getElementById("earning").textContent=earning;
+
+});
+
+}
+
+
+/* ==================================================
+   RIDER STATUS
+   ================================================== */
+
+window.riderStatus=async function(orderId,status){
+
+try{
+
+const update={
+
+status:status,
+updatedAt:serverTimestamp()
+
+};
+
+if(status==="Delivered"){
+
+update.riderEarning=50;
+
+update.riderDeliveredAt=serverTimestamp();
+
+}
+
+await updateDoc(
+doc(db,"orders",orderId),
+update
+);
+
+}catch(e){
+
+alert("Status Error: "+e.message);
+
+}
+
+};
+
+
+/* ==================================================
+   ADMIN
+   ================================================== */
+
+function openAdmin(){
+
+document.getElementById("adminPanel").style.display="block";
+
+loadAdminOrders();
+
+}
+
+window.openAdmin=openAdmin;
+
+
+async function loadAdminOrders(){
+
+const q=query(collection(db,"orders"));
+
+onSnapshot(q,snap=>{
+
+let html="";
+
+snap.forEach(d=>{
+
+const o={id:d.id,...d.data()};
+
+html+=`
+
+<div class="order">
+
+<b>📦 ${d.id.substring(0,8)}</b>
+
+<p>👤 ${o.customerName}</p>
+<p>📞 ${o.customerPhone}</p>
+<p>📍 ${o.address}</p>
+
+<div class="status">
+${o.status}
+</div>
+
+<p>💰 Order ₹${o.total}</p>
+
+${
+o.riderId?
+
+`<p>🚚 Rider: ${o.riderName||o.riderId}</p>`
+
+:
+
+`<button class="primary"
+onclick="showRiders('${d.id}')">
+🚚 Rider Assign करें
+</button>`
+}
+
+</div>
+
+`;
+
+});
+
+document.getElementById("adminContent").innerHTML=
+html||"<p>Orders नहीं हैं।</p>";
+
+});
+
+}
+
+window.loadAdminOrders=loadAdminOrders;
+
+
+/* ==================================================
+   RIDER LIST
+   ================================================== */
+
+window.showRiders=async function(orderId){
+
+const snap=await getDocs(
+query(
+collection(db,"users"),
+where("role","==","rider")
+)
+);
+
+let riders=[];
+
+snap.forEach(d=>{
+
+const r=d.data();
+
+riders.push({
+uid:d.id,
+...r
+});
+
+});
+
+if(!riders.length){
+
+alert("पहले Rider account बनाएं");
+return;
+
+}
+
+let html="<h3>🚚 Rider चुनें</h3>";
+
+riders.forEach(r=>{
+
+html+=`
+
+<div class="order">
+
+<b>${r.name}</b>
+
+<p>ID: ${r.riderId}</p>
+<p>${r.online?"🟢 ONLINE":"🔴 OFFLINE"}</p>
+
+<button class="primary"
+onclick="assignRider('${orderId}','${r.uid}','${escapeText(r.name)}')">
+इस Rider को Assign करें
+</button>
+
+</div>
+
+`;
+
+});
+
+document.getElementById("adminContent").innerHTML=html;
+
+};
+
+function escapeText(x){
+
+return String(x).replace(/'/g,"");
+
+}
+
+
+/* ==================================================
+   ASSIGN RIDER
+   ================================================== */
+
+window.assignRider=async function(orderId,riderId,riderName){
+
+try{
+
+await updateDoc(
+doc(db,"orders",orderId),
+{
+
+riderId:riderId,
+riderName:riderName,
+status:"Rider Assigned",
+riderEarning:50,
+updatedAt:serverTimestamp()
+
+}
+);
+
+alert("✅ Rider Assigned");
+
+loadAdminOrders();
+
+}catch(e){
+
+alert("Assign Error: "+e.message);
+
+}
+
+};
+
+
+/* ==================================================
+   RIDER MAP
+   ================================================== */
+
+window.openRiderMap=async function(orderId){
+
+const snap=await getDoc(
+doc(db,"orders",orderId)
+);
+
+if(!snap.exists())return;
+
+const o=snap.data();
+
+if(!o.riderId){
+
+alert("Rider assign नहीं है");
+return;
+
+}
+
+const rider=await getDoc(
+doc(db,"users",o.riderId)
+);
+
+if(!rider.exists()){
+
+alert("Rider information नहीं मिली");
+return;
+
+}
+
+const r=rider.data();
+
+if(!r.lat||!r.lng){
+
+alert("Rider ने अभी Live Location START नहीं की है");
+return;
+
+}
+
+window.open(
+`https://www.google.com/maps?q=${r.lat},${r.lng}`,
+"_blank"
+);
+
+};
+
+
+/* ==================================================
+   NEW ORDER ALARM
+   ================================================== */
+
+let knownOrders=new Set();
+let alarmReady=false;
+
+document.addEventListener("click",()=>{
+
+alarmReady=true;
+
+},{once:true});
+
+
+onSnapshot(
+collection(db,"orders"),
+snap=>{
+
+snap.docChanges().forEach(change=>{
+
+if(change.type==="added"){
+
+const id=change.doc.id;
+
+if(!knownOrders.has(id)){
+
+knownOrders.add(id);
+
+if(alarmReady){
+
+playAlarm();
+
+}
+
+}
+
+}
+
+});
+
+}
+);
+
+
+function playAlarm(){
+
+try{
+
+const AudioCtx=
+window.AudioContext||
+window.webkitAudioContext;
+
+const ctx=new AudioCtx();
+
+const osc=ctx.createOscillator();
+const gain=ctx.createGain();
+
+osc.frequency.value=900;
+gain.gain.value=.25;
+
+osc.connect(gain);
+gain.connect(ctx.destination);
+
+osc.start();
+
+setTimeout(()=>{
+osc.stop();
+ctx.close();
+},1200);
+
+}catch(e){}
+
+}
+
+
+/* ==================================================
+   INITIAL
+   ================================================== */
+
+renderCategories();
+renderProducts();
+updateCart();
+
+</script>
+
+</body>
+</html>
