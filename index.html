@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>Aalviro Rider Partner</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f4f6;color:#111827}
+header{background:linear-gradient(135deg,#111827,#4338ca);color:#fff;padding:16px}
+.head{max-width:720px;margin:auto;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:22px;font-weight:900}
+.wrap{max-width:720px;margin:auto;padding:16px}
+.card{background:#fff;border-radius:20px;padding:18px;margin-bottom:15px;box-shadow:0 5px 18px #0001}
+.hero{background:linear-gradient(135deg,#111827,#4338ca);color:#fff}
+input{width:100%;padding:14px;border:1px solid #ddd;border-radius:13px;margin:7px 0 13px}
+button{border:0;border-radius:13px;padding:14px;font-weight:800;cursor:pointer}
+.btn{width:100%;margin:5px 0}
+.dark{background:#111827;color:#fff}.green{background:#16a34a;color:#fff}
+.red{background:#dc2626;color:#fff}.blue{background:#2563eb;color:#fff}
+.orange{background:#f59e0b;color:#fff}.gray{background:#e5e7eb;color:#111}
+.hidden{display:none!important}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#fff;border-radius:18px;padding:18px;text-align:center;box-shadow:0 3px 12px #0001}
+.stat b{display:block;font-size:28px;margin-top:6px}
+.order{border:1px solid #e5e7eb;border-radius:18px;padding:15px;margin:12px 0}
+.top{display:flex;justify-content:space-between;gap:8px}
+.badge{padding:7px 10px;border-radius:20px;background:#eef2ff;color:#3730a3;font-size:12px;font-weight:800}
+.money{font-size:22px;font-weight:900;color:#16a34a}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.location{background:#eef4ff;padding:13px;border-radius:14px}
+.empty{text-align:center;padding:25px;color:#6b7280}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;background:linear-gradient(135deg,#111827,#4338ca)}
+.loginbox{background:#fff;width:100%;max-width:450px;padding:25px;border-radius:25px}
+.alert{padding:12px;border-radius:12px;background:#fee2e2;color:#991b1b;margin-top:10px}
+.modalbg{position:fixed;inset:0;background:#000b;display:none;align-items:flex-end;z-index:100}
+.modal{background:#fff;width:100%;max-width:720px;margin:auto;padding:22px;border-radius:25px 25px 0 0}
+.alarm{font-size:75px;text-align:center;animation:pulse .5s infinite alternate}
+@keyframes pulse{from{transform:scale(.9)}to{transform:scale(1.1)}}
+@media(max-width:600px){.actions{grid-template-columns:1fr}}
+</style>
+</head>
+
+<body>
+
+<div id="login" class="login">
+<div class="loginbox">
+<h1>🚚 Aalviro Rider</h1>
+<input id="email" type="email" placeholder="Rider Email">
+<input id="password" type="password" placeholder="Password">
+<button class="btn dark" onclick="login()">🔐 Login</button>
+<button class="btn gray" onclick="register()">🆕 Rider Account बनाएं</button>
+<div id="msg"></div>
+</div>
+</div>
+
+<div id="app" class="hidden">
+
+<header>
+<div class="head">
+<div class="logo">🚚 Aalviro Rider</div>
+<button class="gray" onclick="logout()">Logout</button>
+</div>
+</header>
+
+<div class="wrap">
+
+<div class="card hero">
+<h1>नमस्ते, <span id="name">Rider</span> 👋</h1>
+<p>Rider ID: <b id="riderId">---</b></p>
+<button id="online" class="btn green" onclick="toggleOnline()">
+🟢 ONLINE
+</button>
+</div>
+
+<div class="stats">
+<div class="stat">
+आज की Deliveries
+<b id="todayCount">0</b>
+</div>
+<div class="stat">
+आज की Earning
+<b id="todayMoney">₹0</b>
+</div>
+</div>
+
+<div class="card">
+<h2>📍 Live Location</h2>
+<div id="gps" class="location">🔴 Location बंद है।</div>
+<button class="btn blue" onclick="startGPS()">📍 Start Live Location</button>
+<button class="btn red" onclick="stopGPS()">⛔ Stop Live Location</button>
+</div>
+
+<div class="card">
+<h2>📦 My Orders</h2>
+<div id="orders"><div class="empty">Loading...</div></div>
+</div>
+
+<div class="card">
+<h2>📜 Delivery History</h2>
+<div id="history"><div class="empty">Loading...</div></div>
+</div>
+
+</div>
+</div>
+
+<div id="modal" class="modalbg">
+<div class="modal">
+<div class="alarm">🚨</div>
+<h1 style="text-align:center;color:#dc2626">NEW ORDER</h1>
+<div id="newOrder"></div>
+<button class="btn green" onclick="acceptNew()">✅ ACCEPT ORDER</button>
+<button class="btn red" onclick="closeAlarm()">🔇 Alarm बंद</button>
+</div>
+</div>
+
+<script type="module">
+
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+
+import{
+getAuth,
+onAuthStateChanged,
+signInWithEmailAndPassword,
+createUserWithEmailAndPassword,
+signOut
+}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+import{
+getFirestore,
+collection,
+doc,
+getDoc,
+getDocs,
+setDoc,
+updateDoc,
+serverTimestamp
+}from"https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+
+const firebaseConfig={
+apiKey:"AIzaSyDMmg81OOUPv0_-ZkZeNZazPodV7GDn7ew",
+authDomain:"aalviro-store-5bc7a.firebaseapp.com",
+projectId:"aalviro-store-5bc7a",
+storageBucket:"aalviro-store-5bc7a.firebasestorage.app",
+messagingSenderId:"739678310618",
+appId:"1:739678310618:web:edcc916e13324771d315e3"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let user=null;
+let rider=null;
+let orders=[];
+let online=false;
+let gpsWatch=null;
+let alarmOrder=null;
+let audio=null;
+let alarmLoop=null;
+
+let known=new Set(
+JSON.parse(
+localStorage.getItem("aalviro_known_orders")||"[]"
+)
+);
+
+
+/* LOGIN */
+
+window.login=async()=>{
+const email=document.getElementById("email").value.trim();
+const password=document.getElementById("password").value;
+
+if(!email||!password){
+document.getElementById("msg").innerHTML=
+'<div class="alert">Email और Password डालें।</div>';
+return;
+}
+
+try{
+await signInWithEmailAndPassword(auth,email,password);
+}catch(e){
+document.getElementById("msg").innerHTML=
+'<div class="alert">'+esc(e.message)+'</div>';
+}
+};
+
+
+/* REGISTER */
+
+window.register=async()=>{
+
+const email=prompt("Rider Email:");
+if(!email)return;
+
+const password=prompt("Password:");
+if(!password)return;
+
+const name=prompt("Rider Name:");
+if(!name)return;
+
+const phone=prompt("Mobile Number:");
+if(!phone)return;
+
+try{
+
+const r=
+await createUserWithEmailAndPassword(
+auth,
+email.trim(),
+password
+);
+
+const id=
+"AR"+Math.floor(100000+Math.random()*900000);
+
+await setDoc(
+doc(db,"users",r.user.uid),
+{
+uid:r.user.uid,
+role:"rider",
+name,
+phone,
+email:email.trim(),
+riderId:id,
+online:false,
+createdAt:serverTimestamp()
+}
+);
+
+await setDoc(
+doc(db,"riders",r.user.uid),
+{
+uid:r.user.uid,
+name,
+phone,
+email:email.trim(),
+riderId:id,
+online:false,
+createdAt:serverTimestamp()
+}
+);
+
+alert("Rider ID: "+id);
+
+}catch(e){
+alert(e.message);
+}
+
+};
+
+
+/* AUTH */
+
+onAuthStateChanged(auth,async u=>{
+
+if(!u){
+document.getElementById("login").classList.remove("hidden");
+document.getElementById("app").classList.add("hidden");
+return;
+}
+
+user=u;
+
+try{
+
+const s=await getDoc(
+doc(db,"users",u.uid)
+);
+
+if(!s.exists()||s.data().role!=="rider"){
+await signOut(auth);
+return;
+}
+
+rider=s.data();
+online=!!rider.online;
+
+document.getElementById("login").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+
+document.getElementById("name").textContent=rider.name||"Rider";
+document.getElementById("riderId").textContent=rider.riderId||u.uid;
+
+setOnlineButton();
+
+await loadOrders();
+
+}catch(e){
+console.error(e);
+}
+
+});
+
+
+/* LOAD ORDERS */
+
+async function loadOrders(){
+
+try{
+
+const snap=await getDocs(collection(db,"orders"));
+
+orders=[];
+
+snap.forEach(x=>{
+orders.push({
+id:x.id,
+...x.data()
+});
+});
+
+render();
+checkNewOrder();
+
+}catch(e){
+
+document.getElementById("orders").innerHTML=
+'<div class="empty">❌ Orders load नहीं हुए।</div>';
+
+console.error(e);
+}
+
+}
+
+
+/* RIDER MATCH */
+
+function mine(o){
+
+if(!user)return false;
+
+const uid=String(
+o.riderUid||
+o.assignedRiderUid||
+""
+);
+
+const rid=String(
+o.riderId||
+o.assignedRiderId||
+""
+);
+
+const email=String(
+o.riderEmail||
+o.assignedRiderEmail||
+""
+).toLowerCase();
+
+return(
+uid===user.uid||
+rid===String(rider?.riderId||"")||
+email===String(user.email||"").toLowerCase()
+);
+
+}
+
+
+/* STATUS */
+
+function status(o){
+return String(
+o.status||
+o.orderStatus||
+o.deliveryStatus||
+"New"
+).toLowerCase();
+}
+
+
+/* DELIVERED */
+
+function isDelivered(o){
+
+const s=status(o);
+
+return[
+"delivered",
+"completed",
+"complete",
+"delivery completed"
+].includes(s);
+
+}
+
+
+/* DATE */
+
+function dateValue(v){
+
+if(!v)return null;
+
+try{
+if(v.toDate)return v.toDate();
+if(v.seconds)return new Date(v.seconds*1000);
+return new Date(v);
+}catch(e){
+return null;
+}
+
+}
+
+
+function isToday(v){
+
+const d=dateValue(v);
+
+if(!d)return false;
+
+const n=new Date();
+
+return(
+d.getDate()===n.getDate()&&
+d.getMonth()===n.getMonth()&&
+d.getFullYear()===n.getFullYear()
+);
+
+}
+
+
+/* RIDER PAYMENT */
+
+function riderPayment(o){
+
+const fields=[
+o.riderEarning,
+o.riderEarnings,
+o.deliveryEarning,
+o.deliveryFee,
+o.riderFee,
+o.riderPayment,
+o.deliveryCharge
+];
+
+for(const x of fields){
+
+const n=Number(x);
+
+if(!isNaN(n)&&n>=0)return n;
+
+}
+
+/*
+अगर Admin ने payment field नहीं दिया,
+तो default Rider payment ₹30।
+*/
+
+return 30;
+
+}
+
+
+/* RENDER */
+
+function render(){
+
+const mineOrders=orders.filter(mine);
+
+const active=mineOrders.filter(
+o=>!isDelivered(o)
+);
+
+const history=mineOrders.filter(
+o=>isDelivered(o)
+);
+
+
+/* TODAY */
+
+const todayDone=history.filter(o=>
+isToday(
+o.deliveredAt||
+o.completedAt||
+o.updatedAt||
+o.createdAt
+)
+);
+
+let money=0;
+
+todayDone.forEach(o=>{
+money+=riderPayment(o);
+});
+
+document.getElementById("todayCount")
+.textContent=todayDone.length;
+
+document.getElementById("todayMoney")
+.textContent=
+"₹"+money.toLocaleString("en-IN");
+
+
+/* ACTIVE */
+
+if(!active.length){
+
+document.getElementById("orders").innerHTML=
+'<div class="empty">📦 अभी कोई Active Order नहीं है।</div>';
+
+}else{
+
+document.getElementById("orders").innerHTML=
+active.map(orderHTML).join("");
+
+}
+
+
+/* HISTORY */
+
+if(!history.length){
+
+document.getElementById("history").innerHTML=
+'<div class="empty">अभी कोई completed delivery नहीं है।</div>';
+
+}else{
+
+history.sort((a,b)=>{
+
+const da=dateValue(
+a.deliveredAt||a.updatedAt||a.createdAt
+)?.getTime()||0;
+
+const db=dateValue(
+b.deliveredAt||b.updatedAt||b.createdAt
+)?.getTime()||0;
+
+return db-da;
+
+});
+
+document.getElementById("history").innerHTML=
+history.map(historyHTML).join("");
+
+}
+
+}
+
+
+/* ORDER CARD */
+
+function orderHTML(o){
+
+const customer=
+o.customer?.name||
+o.customerName||
+"Customer";
+
+const phone=
+o.customer?.phone||
+o.customerPhone||
+o.phone||
+"";
+
+const address=
+o.customer?.address||
+o.deliveryAddress||
+o.address||
+"";
+
+const s=status(o);
+
+let buttons="";
+
+
+if(s==="new"||s==="assigned"){
+
+buttons+=`
+<button class="btn green"
+onclick="changeStatus('${o.id}','Accepted')">
+✅ Accept
+</button>
+`;
+
+}
+
+
+if(s==="accepted"||s==="accept"){
+
+buttons+=`
+<button class="btn orange"
+onclick="changeStatus('${o.id}','Pickup')">
+📦 Pickup
+</button>
+`;
+
+}
+
+
+if(s==="pickup"||s==="picked up"||s==="picked"){
+
+buttons+=`
+<button class="btn blue"
+onclick="changeStatus('${o.id}','On The Way')">
+🚚 On The Way
+</button>
+`;
+
+}
+
+
+if(
+s==="on the way"||
+s==="ontheway"||
+s==="out for delivery"
+){
+
+buttons+=`
+<button class="btn green"
+onclick="changeStatus('${o.id}','Delivered')">
+✅ Delivered
+</button>
+`;
+
+}
+
+
+/* किसी भी unknown active status में Delivered */
+
+if(
+!isDelivered(o)&&
+!buttons.includes("Delivered")
+){
+
+buttons+=`
+<button class="btn green"
+onclick="changeStatus('${o.id}','Delivered')">
+✅ Delivered
+</button>
+`;
+
+}
+
+
+const map=
+"https://www.google.com/maps/dir/?api=1&destination="+
+encodeURIComponent(address);
+
+
+return`
+
+<div class="order">
+
+<div class="top">
+<b>📦 #${esc(o.id.substring(0,8))}</b>
+<span class="badge">${esc(o.status||"New")}</span>
+</div>
+
+<p>
+👤 <b>${esc(customer)}</b><br>
+📞 ${esc(phone)}<br>
+📍 ${esc(address)}
+</p>
+
+<p>
+💰 Order Total:
+₹${Number(
+o.total||o.amount||0
+).toLocaleString("en-IN")}
+</p>
+
+<div class="money">
+🚚 Rider Payment:
+₹${riderPayment(o)}
+</div>
+
+<div class="actions">
+
+<button
+class="btn"
+style="background:#111827;color:white"
+onclick="window.open('${map}','_blank')">
+🗺️ Google Maps
+</button>
+
+${
+phone
+?
+`
+<button
+class="btn blue"
+onclick="location.href='tel:${esc(phone)}'">
+📞 Call
+</button>
+`
+:""
+}
+
+</div>
+
+${buttons}
+
+</div>
+
+`;
+
+}
+
+
+/* HISTORY */
+
+function historyHTML(o){
+
+return`
+
+<div class="order">
+
+<div class="top">
+
+<b>📦 #${esc(o.id.substring(0,8))}</b>
+
+<span
+class="badge"
+style="background:#dcfce7;color:#166534">
+✅ Delivered
+</span>
+
+</div>
+
+<p>
+👤 ${
+esc(
+o.customer?.name||
+o.customerName||
+"Customer"
+)
+}
+</p>
+
+<div class="money">
+💰 Rider Earned:
+₹${riderPayment(o)}
+</div>
+
+</div>
+
+`;
+
+}
+
+
+/* STATUS UPDATE */
+
+window.changeStatus=async(id,newStatus)=>{
+
+try{
+
+const ref=doc(db,"orders",id);
+
+const data={
+status:newStatus,
+riderUid:user.uid,
+riderId:rider.riderId,
+riderEmail:user.email,
+updatedAt:serverTimestamp()
+};
+
+if(newStatus==="Delivered"){
+
+data.deliveredAt=serverTimestamp();
+
+data.riderLat=null;
+data.riderLng=null;
+
+data.riderLocationVisible=false;
+data.liveLocationEnabled=false;
+
+stopGPS();
+
+}
+
+await updateDoc(ref,data);
+
+await loadOrders();
+
+}catch(e){
+
+alert("Status Error: "+e.message);
+
+}
+
+};
+
+
+/* ONLINE */
+
+window.toggleOnline=async()=>{
+
+online=!online;
+
+setOnlineButton();
+
+try{
+
+await setDoc(
+doc(db,"users",user.uid),
+{
+online,
+updatedAt:serverTimestamp()
+},
+{merge:true}
+);
+
+if(online)startGPS();
+else stopGPS();
+
+}catch(e){
+console.error(e);
+}
+
+};
+
+
+function setOnlineButton(){
+
+const b=document.getElementById("online");
+
+if(online){
+
+b.className="btn red";
+b.textContent="🔴 OFFLINE — Orders रोकें";
+
+}else{
+
+b.className="btn green";
+b.textContent="🟢 ONLINE — Orders ले सकते हैं";
+
+}
+
+}
+
+
+/* GPS */
+
+window.startGPS=()=>{
+
+if(!user)return;
+
+if(!navigator.geolocation){
+
+alert("GPS उपलब्ध नहीं है।");
+return;
+
+}
+
+if(gps!==null)return;
+
+gps=navigator.geolocation.watchPosition(
+async p=>{
+
+const lat=p.coords.latitude;
+const lng=p.coords.longitude;
+
+document.getElementById("gps").innerHTML=
+`🟢 Live Location ON<br>
+${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+try{
+
+await setDoc(
+doc(db,"riderLocations",user.uid),
+{
+riderUid:user.uid,
+riderId:rider.riderId,
+latitude:lat,
+longitude:lng,
+active:true,
+updatedAt:serverTimestamp()
+},
+{merge:true}
+);
+
+
+/* Active orders */
+
+for(const o of orders){
+
+if(mine(o)&&!isDelivered(o)){
+
+await updateDoc(
+doc(db,"orders",o.id),
+{
+riderLat:lat,
+riderLng:lng,
+riderLocationVisible:true,
+liveLocationEnabled:true,
+locationUpdatedAt:serverTimestamp()
+}
+);
+
+}
+
+}
+
+}catch(e){
+console.log(e);
+}
+
+},
+error=>{
+document.getElementById("gps").innerHTML=
+"❌ GPS permission दें।";
+},
+{
+enableHighAccuracy:true,
+maximumAge:5000,
+timeout:15000
+}
+);
+
+};
+
+
+/* STOP GPS */
+
+window.stopGPS=async()=>{
+
+if(gps!==null){
+
+navigator.geolocation.clearWatch(gps);
+gps=null;
+
+}
+
+document.getElementById("gps").innerHTML=
+"🔴 Live Location बंद है।";
+
+if(user){
+
+try{
+
+await setDoc(
+doc(db,"riderLocations",user.uid),
+{
+active:false,
+updatedAt:serverTimestamp()
+},
+{merge:true}
+);
+
+}catch(e){}
+
+}
+
+};
+
+
+/* NEW ORDER */
+
+function checkNewOrder(){
+
+if(!online)return;
+
+for(const o of orders){
+
+if(
+mine(o)&&
+!isDelivered(o)&&
+(
+status(o)==="new"||
+status(o)==="assigned"
+)&&
+!known.has(o.id)
+){
+
+known.add(o.id);
+
+localStorage.setItem(
+"aalviro_known_orders",
+JSON.stringify([...known])
+);
+
+alarmOrder=o;
+
+showAlarm(o);
+
+break;
+
+}
+
+}
+
+}
+
+
+/* SHOW ALARM */
+
+function showAlarm(o){
+
+document.getElementById("newOrder").innerHTML=`
+
+<div class="card">
+
+<h3>
+📦 Order #${esc(o.id.substring(0,8))}
+</h3>
+
+<p>
+👤 ${
+esc(
+o.customer?.name||
+o.customerName||
+"Customer"
+)
+}
+</p>
+
+<p>
+📍 ${
+esc(
+o.customer?.address||
+o.address||
+o.deliveryAddress||
+""
+)
+}
+</p>
+
+<h2 style="color:#16a34a">
+💰 Rider Payment:
+₹${riderPayment(o)}
+</h2>
+
+</div>
+
+`;
+
+document.getElementById("modal")
+.style.display="flex";
+
+startAlarm();
+
+}
+
+
+/* ACCEPT */
+
+window.acceptNew=async()=>{
+
+if(!alarmOrder)return;
+
+await changeStatus(
+alarmOrder.id,
+"Accepted"
+);
+
+closeAlarm();
+
+};
+
+
+/* CLOSE */
+
+window.closeAlarm=()=>{
+
+document.getElementById("modal")
+.style.display="none";
+
+stopAlarm();
+
+alarmOrder=null;
+
+};
+
+
+/* AUDIO ALARM */
+
+function startAlarm(){
+
+stopAlarm();
+
+try{
+
+const AC=
+window.AudioContext||
+window.webkitAudioContext;
+
+audio=new AC();
+
+function beep(){
+
+if(!audio)return;
+
+const osc=
+audio.createOscillator();
+
+const gain=
+audio.createGain();
+
+osc.type="square";
+
+osc.frequency.value=950;
+
+gain.gain.value=.10;
+
+osc.connect(gain);
+gain.connect(audio.destination);
+
+osc.start();
+
+setTimeout(()=>{
+try{osc.frequency.value=650}catch(e){}
+},250);
+
+setTimeout(()=>{
+try{osc.stop()}catch(e){}
+},500);
+
+}
+
+beep();
+
+alarmLoop=setInterval(
+beep,
+800
+);
+
+}catch(e){
+
+console.log("Alarm:",e);
+
+}
+
+}
+
+
+/* STOP ALARM */
+
+function stopAlarm(){
+
+if(alarmLoop){
+
+clearInterval(alarmLoop);
+alarmLoop=null;
+
+}
+
+if(audio){
+
+try{
+audio.close();
+}catch(e){}
+
+audio=null;
+
+}
+
+}
+
+
+/* LOGOUT */
+
+window.logout=async()=>{
+
+stopGPS();
+stopAlarm();
+
+await signOut(auth);
+
+};
+
+
+/* ESCAPE */
+
+function esc(v){
+
+return String(v??"")
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+
+}
+
+
+/* AUTO REFRESH */
+
+setInterval(()=>{
+
+if(user)loadOrders();
+
+},15000);
+
+</script>
+
+</body>
+</html>
