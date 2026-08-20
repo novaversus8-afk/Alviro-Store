@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aalviro Store</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:Arial,sans-serif;background:#f4f6f9;color:#101828
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:0}
+header{
+ background:linear-gradient(135deg,#111b4b,#5b0b5f);
+ color:white;padding:15px;position:sticky;top:0;z-index:20
+}
+.nav{
+ max-width:1100px;margin:auto;display:flex;align-items:center;
+ justify-content:space-between;gap:8px;flex-wrap:wrap
+}
+.logo{font-size:24px;font-weight:800}
+.nav button{
+ background:white;color:#111;padding:11px 15px;border-radius:12px;margin:2px
+}
+.container{max-width:1100px;margin:auto;padding:18px}
+.hero{
+ background:linear-gradient(135deg,#11162f,#3527a9);
+ color:white;border-radius:25px;padding:30px;margin-bottom:20px
+}
+.hero h1{font-size:38px;margin:0 0 10px}
+.search{
+ width:100%;padding:16px;border:1px solid #ddd;border-radius:15px;
+ margin:15px 0
+}
+.categories{display:flex;gap:10px;overflow:auto;padding-bottom:10px}
+.categories button{
+ background:white;padding:12px 18px;border-radius:20px;white-space:nowrap
+}
+.products{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:15px
+}
+.card{
+ background:white;border-radius:18px;padding:16px;box-shadow:0 3px 15px #00000012
+}
+.product-icon{font-size:48px}
+.price{font-size:22px;font-weight:800}
+.small{color:#667085;font-size:14px}
+.primary{
+ background:#315fe8;color:white;padding:13px 18px;border-radius:12px
+}
+.success{background:#087443;color:white;padding:13px 18px;border-radius:12px}
+.danger{background:#df2929;color:white;padding:13px 18px;border-radius:12px}
+.warning{background:#f4b400;color:#111;padding:13px 18px;border-radius:12px}
+.dark{background:#101828;color:white;padding:13px 18px;border-radius:12px}
+.full{width:100%}
+.modal{
+ position:fixed;inset:0;background:#0008;z-index:100;
+ display:none;align-items:center;justify-content:center;padding:15px
+}
+.modal.show{display:flex}
+.modalbox{
+ background:white;border-radius:22px;width:min(700px,100%);
+ max-height:92vh;overflow:auto;padding:22px
+}
+.modalhead{display:flex;justify-content:space-between;align-items:center}
+.close{
+ width:40px;height:40px;border-radius:50%;background:#eee;font-size:24px
+}
+input,select,textarea{
+ width:100%;padding:13px;border:1px solid #d0d5dd;border-radius:10px;
+ margin:6px 0 12px
+}
+label{font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1}
+.statgrid{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px
+}
+.stat{
+ background:white;border-radius:18px;padding:20px;text-align:center
+}
+.stat b{font-size:28px}
+.order{
+ background:white;border-radius:18px;padding:17px;margin:12px 0;
+ border:1px solid #eaecf0
+}
+.status{
+ display:inline-block;padding:7px 12px;border-radius:20px;
+ background:#eef2ff;color:#26358c;font-weight:700
+}
+.line{
+ border-top:1px solid #eee;margin:12px 0
+}
+.empty{text-align:center;padding:40px;color:#667085}
+.adminnav,.ridernav{
+ display:flex;gap:8px;overflow:auto;margin-bottom:15px
+}
+.adminnav button,.ridernav button{
+ padding:11px 15px;background:white;border-radius:12px
+}
+.hidden{display:none!important}
+.toast{
+ position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+ background:#111827;color:white;padding:14px 20px;border-radius:12px;
+ z-index:300;display:none
+}
+.alarm{
+ position:fixed;inset:0;background:#000b;z-index:250;
+ display:none;align-items:center;justify-content:center;padding:20px
+}
+.alarmbox{
+ background:white;border-radius:25px;padding:35px;text-align:center;
+ max-width:500px;width:100%
+}
+.mapbtn{background:#2f65e8;color:white;padding:10px 14px;border-radius:10px}
+hr{border:0;border-top:1px solid #eee}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="nav">
+<div class="logo">🛍️ Aalviro Store</div>
+<div>
+<button onclick="openCustomer()">🛒 Cart <span id="cartCount">0</span></button>
+<button onclick="openLogin()">🔐 Login</button>
+<button onclick="openAdmin()">⚙️ Admin</button>
+<button onclick="openRider()">🚚 Rider</button>
+<button onclick="openOrders()">📦 Orders</button>
+</div>
+</div>
+</header>
+
+<main class="container">
+
+<section class="hero">
+<h1>Aalviro Store</h1>
+<p>आपका भरोसेमंद Online Store</p>
+<p>🚚 Fast Delivery &nbsp; • &nbsp; 💵 COD &nbsp; • &nbsp; 💳 UPI</p>
+</section>
+
+<input id="search" class="search" placeholder="🔎 सामान खोजें..." oninput="renderProducts()">
+
+<div class="categories">
+<button onclick="setCat('All')">All</button>
+<button onclick="setCat('Grocery')">Grocery</button>
+<button onclick="setCat('Vegetables')">Vegetables</button>
+<button onclick="setCat('Fruits')">Fruits</button>
+<button onclick="setCat('Dairy')">Dairy</button>
+<button onclick="setCat('Snacks')">Snacks</button>
+<button onclick="setCat('Household')">Household</button>
+</div>
+
+<div id="products" class="products"></div>
+
+</main>
+
+<div id="modal" class="modal">
+<div class="modalbox">
+<div class="modalhead">
+<h2 id="modalTitle">Aalviro</h2>
+<button class="close" onclick="closeModal()">×</button>
+</div>
+<div id="modalBody"></div>
+</div>
+</div>
+
+<div id="alarm" class="alarm">
+<div class="alarmbox">
+<div style="font-size:80px">🚨</div>
+<h1>NEW ORDER!</h1>
+<h2>🔔 ORDER RECEIVED</h2>
+<p>नया delivery order आया है।</p>
+<button class="primary full" onclick="closeAlarm();openRider()">📦 Order खोलें</button>
+<br><br>
+<button class="danger full" onclick="closeAlarm()">🔇 Alarm बंद करें</button>
+</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script type="module">
+
+import {
+ initializeApp,
+ getApps,
+ getApp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+ getAuth,
+ createUserWithEmailAndPassword,
+ signInWithEmailAndPassword,
+ signOut,
+ onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+ getFirestore,
+ collection,
+ doc,
+ addDoc,
+ setDoc,
+ updateDoc,
+ getDoc,
+ getDocs,
+ query,
+ where,
+ orderBy,
+ onSnapshot,
+ serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+/* ================= FIREBASE ================= */
+
+const firebaseConfig = {
+ apiKey:"AIzaSyDMmg81OOUPv0_-ZkZeNZazPodV7GDn7ew",
+ authDomain:"aalviro-store-5bc7a.firebaseapp.com",
+ projectId:"aalviro-store-5bc7a",
+ storageBucket:"aalviro-store-5bc7a.firebasestorage.app",
+ messagingSenderId:"739678310618",
+ appId:"1:739678310618:web:edcc916e13324771d315e3",
+ measurementId:"G-N8T1TYG5TD"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+
+/* ================= STATE ================= */
+
+let products=[];
+let cart=[];
+let category="All";
+let currentUser=null;
+let currentProfile=null;
+let riderWatch=null;
+let riderListener=null;
+let adminListener=null;
+let customerOrderListener=null;
+let lastRiderOrderIds=new Set();
+let alarmAudio=null;
+
+
+/* ================= HELPERS ================= */
+
+const $=id=>document.getElementById(id);
+
+function toast(msg){
+ $("toast").innerText=msg;
+ $("toast").style.display="block";
+ setTimeout(()=>$("toast").style.display="none",3000);
+}
+
+function closeModal(){
+ $("modal").classList.remove("show");
+}
+
+function openModal(title,html){
+ $("modalTitle").innerText=title;
+ $("modalBody").innerHTML=html;
+ $("modal").classList.add("show");
+}
+
+function closeAlarm(){
+ $("alarm").style.display="none";
+ if(alarmAudio){
+  alarmAudio.pause();
+  alarmAudio.currentTime=0;
+ }
+}
+
+function setCat(c){
+ category=c;
+ renderProducts();
+}
+
+function money(n){
+ return "₹"+Number(n||0).toFixed(0);
+}
+
+
+/* ================= PRODUCTS ================= */
+
+const defaultProducts=[
+"आलू","प्याज","टमाटर","भिंडी","बैंगन","गोभी","पत्ता गोभी","गाजर",
+"मटर","शिमला मिर्च","खीरा","लहसुन","अदरक","हरी मिर्च","धनिया",
+"नींबू","सेब","केला","संतरा","अंगूर","अनार","आम","पपीता","तरबूज",
+"दूध","दही","पनीर","ब्रेड","बटर","अंडे","चावल","गेहूं आटा",
+"मैदा","बेसन","सूजी","चीनी","नमक","चना दाल","तूर दाल","मूंग दाल",
+"मसूर दाल","राजमा","चना","तेल","बिस्किट","नमकीन","चिप्स","साबुन",
+"शैम्पू","डिटर्जेंट"
+];
+
+const cats=[
+"Vegetables","Vegetables","Vegetables","Vegetables","Vegetables",
+"Vegetables","Vegetables","Vegetables","Vegetables","Vegetables",
+"Vegetables","Vegetables","Vegetables","Vegetables","Vegetables",
+"Vegetables","Fruits","Fruits","Fruits","Fruits","Fruits","Fruits",
+"Fruits","Fruits","Dairy","Dairy","Dairy","Dairy","Dairy",
+"Grocery","Grocery","Grocery","Grocery","Grocery","Grocery","Grocery",
+"Grocery","Grocery","Grocery","Grocery","Grocery","Grocery","Grocery",
+"Grocery","Snacks","Snacks","Household","Household","Household","Household"
+];
+
+async function seedProducts(){
+
+ const snap=await getDocs(collection(db,"products"));
+
+ if(!snap.empty){
+  products=snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderProducts();
+  return;
+ }
+
+ const batch=[];
+
+ for(let i=0;i<defaultProducts.length;i++){
+  const price=20+(i%12)*10;
+  batch.push({
+   name:defaultProducts[i],
+   category:cats[i]||"Grocery",
+   price,
+   unit:"1 pc",
+   active:true,
+   createdAt:serverTimestamp()
+  });
+ }
+
+ for(const p of batch){
+  try{
+   await addDoc(collection(db,"products"),p);
+  }catch(e){
+   console.log("seed error",e);
+  }
+ }
+
+ const again=await getDocs(collection(db,"products"));
+ products=again.docs.map(d=>({id:d.id,...d.data()}));
+ renderProducts();
+}
+
+function renderProducts(){
+
+ const box=$("products");
+ const s=($("search").value||"").toLowerCase();
+
+ let list=products.filter(p=>p.active!==false);
+
+ if(category!=="All")
+  list=list.filter(p=>p.category===category);
+
+ if(s)
+  list=list.filter(p=>
+   String(p.name).toLowerCase().includes(s) ||
+   String(p.category).toLowerCase().includes(s)
+  );
+
+ box.innerHTML=list.map(p=>`
+ <div class="card">
+  <div class="product-icon">🛍️</div>
+  <h3>${p.name}</h3>
+  <div class="small">${p.category} • ${p.unit||"1 pc"}</div>
+  <p class="price">${money(p.price)}</p>
+  <button class="primary full" onclick="addCart('${p.id}')">🛒 Add</button>
+ </div>
+ `).join("") || `<div class="empty">Product नहीं मिला</div>`;
+}
+
+window.addCart=function(id){
+ const p=products.find(x=>x.id===id);
+ if(!p)return;
+
+ const old=cart.find(x=>x.id===id);
+
+ if(old)old.qty++;
+ else cart.push({...p,qty:1});
+
+ updateCart();
+ toast("Cart में add हो गया");
+};
+
+function updateCart(){
+ $("cartCount").innerText=cart.reduce((a,b)=>a+b.qty,0);
+}
+
+function cartTotal(){
+ return cart.reduce((a,b)=>a+(Number(b.price)*b.qty),0);
+}
+
+
+/* ================= CUSTOMER ================= */
+
+window.openCustomer=function(){
+
+ const rows=cart.map((x,i)=>`
+ <div class="card">
+ <b>${x.name}</b>
+ <p>${money(x.price)} × ${x.qty}</p>
+ <button class="danger" onclick="removeCart(${i})">Remove</button>
+ </div>
+ `).join("");
+
+ openModal("🛒 Cart",`
+ ${rows||'<div class="empty">Cart खाली है</div>'}
+ <hr>
+ <h2>Total: ${money(cartTotal())}</h2>
+ <button class="success full" onclick="checkout()">📦 Checkout</button>
+ `);
+};
+
+window.removeCart=function(i){
+ cart.splice(i,1);
+ updateCart();
+ openCustomer();
+};
+
+window.checkout=function(){
+
+ if(!cart.length){
+  toast("Cart खाली है");
+  return;
+ }
+
+ if(!currentUser){
+  closeModal();
+  openLogin();
+  return;
+ }
+
+ openModal("📦 Order Details",`
+ <label>Customer Name</label>
+ <input id="cname" placeholder="नाम">
+
+ <label>Mobile</label>
+ <input id="cmobile" placeholder="Mobile">
+
+ <label>Delivery Address</label>
+ <textarea id="caddress" placeholder="पूरा address"></textarea>
+
+ <label>Payment</label>
+ <select id="payment">
+  <option value="COD">💵 Cash on Delivery</option>
+  <option value="UPI">📱 Online Payment / UPI</option>
+ </select>
+
+ <h2>Total: ${money(cartTotal())}</h2>
+
+ <button class="primary full" onclick="placeOrder()">
+ 🚀 Order Place करें
+ </button>
+ `);
+};
+
+window.placeOrder=async function(){
+
+ try{
+
+  if(!currentUser){
+   toast("पहले Login करें");
+   return;
+  }
+
+  const name=$("cname").value.trim();
+  const mobile=$("cmobile").value.trim();
+  const address=$("caddress").value.trim();
+  const payment=$("payment").value;
+
+  if(!name||!mobile||!address){
+   toast("सभी जानकारी भरें");
+   return;
+  }
+
+  const total=cartTotal();
+
+  const order={
+   customerId:currentUser.uid,
+   customerEmail:currentUser.email,
+   customerName:name,
+   customerPhone:mobile,
+   address,
+   items:cart.map(x=>({
+    productId:x.id,
+    name:x.name,
+    price:Number(x.price),
+    qty:x.qty
+   })),
+   total,
+   payment,
+   paymentStatus:payment==="COD"?"Pending":"Pending",
+   status:"Order Placed",
+   riderId:"",
+   riderName:"",
+   riderPhone:"",
+   riderEarning:0,
+   location:null,
+   createdAt:serverTimestamp(),
+   updatedAt:serverTimestamp()
+  };
+
+  const ref=await addDoc(collection(db,"orders"),order);
+
+  if(payment==="UPI"){
+   const upi=`upi://pay?pa=7209000233@fam&pn=Aalviro%20Store&am=${total}&cu=INR`;
+   window.location.href=upi;
+  }
+
+  cart=[];
+  updateCart();
+  closeModal();
+  toast("✅ Order successfully placed");
+
+  openOrders();
+
+ }catch(e){
+  console.error(e);
+  toast("Order Error: "+e.message);
+ }
+};
+
+
+/* ================= LOGIN ================= */
+
+window.openLogin=function(){
+
+ openModal("🔐 Login",`
+ <label>Email</label>
+ <input id="loginEmail" type="email">
+
+ <label>Password</label>
+ <input id="loginPass" type="password">
+
+ <button class="primary full" onclick="login()">🔐 Login</button>
+
+ <br><br>
+
+ <button class="dark full" onclick="openRegister()">
+ 👤 नया Customer Account
+ </button>
+ `);
+};
+
+window.openRegister=function(){
+
+ openModal("👤 Create Account",`
+ <label>Name</label>
+ <input id="regName">
+
+ <label>Email</label>
+ <input id="regEmail" type="email">
+
+ <label>Password</label>
+ <input id="regPass" type="password">
+
+ <label>Mobile</label>
+ <input id="regPhone">
+
+ <button class="success full" onclick="registerCustomer()">
+ Create Account
+ </button>
+ `);
+};
+
+window.registerCustomer=async function(){
+
+ try{
+
+  const name=$("regName").value.trim();
+  const email=$("regEmail").value.trim();
+  const pass=$("regPass").value;
+  const phone=$("regPhone").value.trim();
+
+  const cred=await createUserWithEmailAndPassword(
+   auth,email,pass
+  );
+
+  await setDoc(doc(db,"users",cred.user.uid),{
+   uid:cred.user.uid,
+   name,
+   email,
+   phone,
+   role:"customer",
+   createdAt:serverTimestamp()
+  });
+
+  toast("Account बन गया");
+  closeModal();
+
+ }catch(e){
+  toast(e.message);
+ }
+};
+
+window.login=async function(){
+
+ try{
+
+  const email=$("loginEmail").value.trim();
+  const pass=$("loginPass").value;
+
+  await signInWithEmailAndPassword(auth,email,pass);
+
+  closeModal();
+  toast("Login successful");
+
+ }catch(e){
+  toast("Login Error: "+e.message);
+ }
+};
+
+
+/* ================= PROFILE ================= */
+
+onAuthStateChanged(auth,async user=>{
+
+ currentUser=user;
+ currentProfile=null;
+
+ if(user){
+  const snap=await getDoc(doc(db,"users",user.uid));
+
+  if(snap.exists())
+   currentProfile=snap.data();
+ }
+
+});
+
+
+/* ================= ORDERS ================= */
+
+window.openOrders=async function(){
+
+ if(!currentUser){
+  openLogin();
+  return;
+ }
+
+ openModal("📦 My Orders",`
+ <div id="myOrders"><div class="empty">Loading...</div></div>
+ `);
+
+ await loadCustomerOrders();
+};
+
+async function loadCustomerOrders(){
+
+ const box=$("myOrders");
+ if(!box)return;
+
+ try{
+
+  /*
+   IMPORTANT:
+   केवल customerId से query हो रही है।
+   कोई composite index नहीं चाहिए।
+  */
+
+  const q=query(
+   collection(db,"orders"),
+   where("customerId","==",currentUser.uid)
+  );
+
+  const snap=await getDocs(q);
+
+  let arr=snap.docs.map(d=>({id:d.id,...d.data()}));
+
+  arr.sort((a,b)=>{
+   const aa=a.createdAt?.seconds||0;
+   const bb=b.createdAt?.seconds||0;
+   return bb-aa;
+  });
+
+  if(!arr.length){
+   box.innerHTML=`<div class="empty">अभी कोई order नहीं है</div>`;
+   return;
+  }
+
+  box.innerHTML=arr.map(renderCustomerOrder).join("");
+
+ }catch(e){
+  box.innerHTML=`<div class="empty">Orders Error: ${e.message}</div>`;
+ }
+}
+
+function renderCustomerOrder(o){
+
+ const locationHTML=
+ o.riderId && o.status!=="Delivered" && o.location ?
+ `
+ <div class="line"></div>
+ <b>📍 Rider Live Location</b>
+ <p>${Number(o.location.lat).toFixed(5)},
+ ${Number(o.location.lng).toFixed(5)}</p>
+ <button class="mapbtn"
+ onclick="openMap(${o.location.lat},${o.location.lng})">
+ 🗺️ Rider को Map पर देखें
+ </button>
+ `
+ :
+ o.status==="Delivered"
+ ? `<p class="small">📍 Delivery complete — live location बंद है।</p>`
+ : `<p class="small">📍 Rider location अभी available नहीं है।</p>`;
+
+ return `
+ <div class="order">
+ <h3>📦 Order #${o.id.slice(0,8)}</h3>
+ <span class="status">${o.status||"Order Placed"}</span>
+
+ <p>💰 ${money(o.total)}</p>
+ <p>💳 ${o.payment||"COD"}</p>
+
+ <p>🚚 Rider:
+ ${o.riderName||"अभी assign नहीं हुआ"}</p>
+
+ ${o.riderPhone?
+ `<button class="success" onclick="location.href='tel:${o.riderPhone}'">
+ 📞 Rider को Call
+ </button>`:""}
+
+ ${locationHTML}
+
+ <hr>
+
+ ${o.items?.map(i=>
+ `<div>${i.name} × ${i.qty} — ${money(i.price*i.qty)}</div>`
+ ).join("")||""}
+ </div>
+ `;
+}
+
+window.openMap=function(lat,lng){
+ window.open(
+  `https://www.google.com/maps?q=${lat},${lng}`,
+  "_blank"
+ );
+};
+
+
+/* ================= ADMIN ================= */
+
+window.openAdmin=function(){
+
+ openModal("⚙️ Admin Login",`
+ <label>Email</label>
+ <input id="adminEmail" type="email"
+ value="${currentUser?.email||""}">
+
+ <label>Password</label>
+ <input id="adminPass" type="password">
+
+ <button class="dark full" onclick="adminLogin()">
+ ⚙️ Admin Login
+ </button>
+ `);
+};
+
+window.adminLogin=async function(){
+
+ try{
+
+  if(!currentUser){
+
+   await signInWithEmailAndPassword(
+    auth,
+    $("adminEmail").value.trim(),
+    $("adminPass").value
+   );
+
+  }
+
+  const snap=await getDoc(
+   doc(db,"users",auth.currentUser.uid)
+  );
+
+  if(!snap.exists()||snap.data().role!=="admin"){
+   toast("इस account को Admin role नहीं मिला है");
+   return;
+  }
+
+  currentProfile=snap.data();
+  closeModal();
+  showAdmin();
+
+ }catch(e){
+  toast("Admin Login Error: "+e.message);
+ }
+};
+
+async function showAdmin(){
+
+ openModal("⚙️ Admin Dashboard",`
+ <div class="adminnav">
+  <button onclick="adminOverview()">📊 Overview</button>
+  <button onclick="adminOrders()">📦 Orders</button>
+  <button onclick="adminRiders()">🚚 Riders</button>
+  <button onclick="adminProducts()">🛍️ Products</button>
+  <button onclick="adminHistory()">📜 History</button>
+ </div>
+ <div id="adminContent"></div>
+ `);
+
+ adminOverview();
+}
+
+window.adminOverview=async function(){
+
+ const box=$("adminContent");
+ if(!box)return;
+
+ try{
+
+  const snap=await getDocs(collection(db,"orders"));
+  const arr=snap.docs.map(d=>d.data());
+
+  const today=new Date();
+  today.setHours(0,0,0,0);
+
+  const todayArr=arr.filter(o=>{
+   const s=o.createdAt?.seconds;
+   return s && s*1000>=today.getTime();
+  });
+
+  const sales=arr.reduce((a,o)=>a+Number(o.total||0),0);
+  const earnings=arr.reduce((a,o)=>a+Number(o.riderEarning||0),0);
+
+  box.innerHTML=`
+  <div class="statgrid">
+   <div class="stat"><b>${arr.length}</b><br>Total Orders</div>
+   <div class="stat"><b>${todayArr.length}</b><br>Today Orders</div>
+   <div class="stat"><b>${money(sales)}</b><br>Total Sales</div>
+   <div class="stat"><b>${money(earnings)}</b><br>Rider Payments</div>
+  </div>
+
+  <br>
+  <button class="primary full" onclick="adminOrders()">
+  📦 Manage Orders
+  </button>
+  `;
+
+ }catch(e){
+  box.innerHTML=e.message;
+ }
+};
+
+window.adminOrders=async function(){
+
+ const box=$("adminContent");
+ if(!box)return;
+
+ box.innerHTML="Loading...";
+
+ const snap=await getDocs(collection(db,"orders"));
+
+ let arr=snap.docs.map(d=>({id:d.id,...d.data()}));
+
+ arr.sort((a,b)=>
+  (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)
+ );
+
+ box.innerHTML=arr.map(o=>`
+ <div class="order">
+
+ <h3>📦 #${o.id.slice(0,8)}</h3>
+ <span class="status">${o.status}</span>
+
+ <p>👤 ${o.customerName}</p>
+ <p>📞 ${o.customerPhone}</p>
+ <p>📍 ${o.address}</p>
+ <p>💰 ${money(o.total)}</p>
+
+ <p>🚚 Rider:
+ ${o.riderName||"Not Assigned"}</p>
+
+ <select id="rider_${o.id}">
+  <option value="">Rider चुनें</option>
+ </select>
+
+ <button class="primary full"
+ onclick="assignRider('${o.id}')">
+ 🚚 Rider Assign करें
+ </button>
+
+ <br><br>
+
+ <select onchange="adminChangeStatus('${o.id}',this.value)">
+  <option value="">Status बदलें</option>
+  <option>Order Placed</option>
+  <option>Confirmed</option>
+  <option>Preparing</option>
+  <option>Rider Assigned</option>
+  <option>Picked Up</option>
+  <option>On The Way</option>
+  <option>Delivered</option>
+  <option>Cancelled</option>
+ </select>
+
+ </div>
+ `).join("");
+
+ await fillRiderSelects(arr);
+};
+
+async function fillRiderSelects(orders){
+
+ const snap=await getDocs(
+  query(collection(db,"users"),where("role","==","rider"))
+ );
+
+ const riders=snap.docs.map(d=>({id:d.id,...d.data()}));
+
+ for(const o of orders){
+
+  const select=$(`rider_${o.id}`);
+
+  if(!select)continue;
+
+  select.innerHTML=
+   `<option value="">Rider चुनें</option>`+
+   riders.map(r=>
+    `<option value="${r.uid||r.id}">
+    ${r.name||r.email} ${r.online?"🟢":"🔴"}
+    </option>`
+   ).join("");
+ }
+}
+
+window.assignRider=async function(orderId){
+
+ const select=$(`rider_${orderId}`);
+ const riderId=select?.value;
+
+ if(!riderId){
+  toast("Rider चुनें");
+  return;
+ }
+
+ const rs=await getDoc(doc(db,"users",riderId));
+
+ if(!rs.exists()){
+  toast("Rider नहीं मिला");
+  return;
+ }
+
+ const r=rs.data();
+
+ await updateDoc(doc(db,"orders",orderId),{
+  riderId:riderId,
+  riderName:r.name||r.email,
+  riderPhone:r.phone||"",
+  riderEarning:0,
+  status:"Rider Assigned",
+  updatedAt:serverTimestamp()
+ });
+
+ toast("🚚 Rider assign हो गया");
+ adminOrders();
+};
+
+window.adminChangeStatus=async function(id,status){
+
+ if(!status)return;
+
+ const data={
+  status,
+  updatedAt:serverTimestamp()
+ };
+
+ if(status==="Delivered"){
+  const os=await getDoc(doc(db,"orders",id));
+
+  if(os.exists()){
+   const o=os.data();
+
+   data.riderEarning=calculateRiderEarning(o.total);
+   data.location=null;
+   data.paymentStatus=
+    o.payment==="COD"?"Collected":"Paid";
+  }
+ }
+
+ await updateDoc(doc(db,"orders",id),data);
+
+ toast("Status updated");
+ adminOrders();
+};
+
+function calculateRiderEarning(total){
+ /*
+  Default rider payment:
+  ₹40 minimum + ₹5 for every ₹100 above ₹300
+ */
+ total=Number(total||0);
+ return Math.max(40,40+Math.floor(Math.max(0,total-300)/100)*5);
+}
+
+
+/* ================= ADMIN RIDERS ================= */
+
+window.adminRiders=async function(){
+
+ const box=$("adminContent");
+ const snap=await getDocs(
+  query(collection(db,"users"),where("role","==","rider"))
+ );
+
+ const riders=snap.docs.map(d=>({id:d.id,...d.data()}));
+
+ box.innerHTML=`
+ <h2>🚚 Riders</h2>
+
+ <button class="success full" onclick="createRiderForm()">
+ ➕ नया Rider
+ </button>
+
+ ${riders.map(r=>`
+ <div class="order">
+ <h3>${r.name||"Rider"}</h3>
+ <p>🆔 ${r.riderId||r.uid}</p>
+ <p>📧 ${r.email}</p>
+ <p>📞 ${r.phone||"-"}</p>
+ <p>${r.online?"🟢 Online":"🔴 Offline"}</p>
+ </div>
+ `).join("")}
+ `;
+};
+
+window.createRiderForm=function(){
+
+ openModal("🚚 Create Rider",`
+ <label>Name</label>
+ <input id="rn">
+
+ <label>Email</label>
+ <input id="re" type="email">
+
+ <label>Password</label>
+ <input id="rp" type="password">
+
+ <label>Mobile</label>
+ <input id="rphone">
+
+ <button class="success full" onclick="createRider()">
+ Create Rider
+ </button>
+ `);
+};
+
+window.createRider=async function(){
+
+ try{
+
+  const name=$("rn").value.trim();
+  const email=$("re").value.trim();
+  const pass=$("rp").value;
+  const phone=$("rphone").value.trim();
+
+  /*
+   Firebase Admin SDK browser में नहीं चाहिए।
+   Secondary Firebase app से rider create होगा,
+   इसलिए current admin logout नहीं होगा।
+  */
+
+  const secondaryName="rider-"+Date.now();
+
+  const secondaryApp=initializeApp(
+   firebaseConfig,
+   secondaryName
+  );
+
+  const secondaryAuth=getAuth(secondaryApp);
+
+  const cred=await createUserWithEmailAndPassword(
+   secondaryAuth,email,pass
+  );
+
+  const riderId="AR"+Math.floor(
+   100000+Math.random()*899999
+  );
+
+  await setDoc(doc(db,"users",cred.user.uid),{
+   uid:cred.user.uid,
+   name,
+   email,
+   phone,
+   riderId,
+   role:"rider",
+   online:false,
+   location:null,
+   totalOrders:0,
+   totalEarning:0,
+   createdAt:serverTimestamp()
+  });
+
+  await signOut(secondaryAuth);
+
+  toast("Rider account बन गया: "+riderId);
+  closeModal();
+
+ }catch(e){
+  toast("Rider Create Error: "+e.message);
+ }
+};
+
+
+/* ================= ADMIN PRODUCTS ================= */
+
+window.adminProducts=async function(){
+
+ const box=$("adminContent");
+
+ box.innerHTML=`
+ <button class="success full" onclick="addProductForm()">
+ ➕ Product Add करें
+ </button>
+
+ <br><br>
+
+ ${products.map(p=>`
+ <div class="order">
+ <h3>🛍️ ${p.name}</h3>
+ <p>${p.category} • ${money(p.price)}</p>
+ <button class="danger"
+ onclick="deleteProduct('${p.id}')">
+ Delete
+ </button>
+ </div>
+ `).join("")}
+ `;
+};
+
+window.addProductForm=function(){
+
+ openModal("➕ Add Product",`
+ <label>Product Name</label>
+ <input id="pn">
+
+ <label>Category</label>
+ <select id="pc">
+  <option>Grocery</option>
+  <option>Vegetables</option>
+  <option>Fruits</option>
+  <option>Dairy</option>
+  <option>Snacks</option>
+  <option>Household</option>
+ </select>
+
+ <label>Price</label>
+ <input id="pp" type="number">
+
+ <label>Unit</label>
+ <input id="pu" value="1 pc">
+
+ <button class="success full" onclick="addProduct()">
+ Save Product
+ </button>
+ `);
+};
+
+window.addProduct=async function(){
+
+ const name=$("pn").value.trim();
+ const category=$("pc").value;
+ const price=Number($("pp").value);
+ const unit=$("pu").value.trim();
+
+ if(!name||!price){
+  toast("Product details भरें");
+  return;
+ }
+
+ await addDoc(collection(db,"products"),{
+  name,category,price,unit,
+  active:true,
+  createdAt:serverTimestamp()
+ });
+
+ toast("Product added");
+ closeModal();
+
+ const snap=await getDocs(collection(db,"products"));
+ products=snap.docs.map(d=>({id:d.id,...d.data()}));
+
+ renderProducts();
+};
+
+window.deleteProduct=async function(id){
+
+ await updateDoc(doc(db,"products",id),{
+  active:false
+ });
+
+ toast("Product हट गया");
+ adminProducts();
+};
+
+
+/* ================= ADMIN HISTORY ================= */
+
+window.adminHistory=async function(){
+
+ const box=$("adminContent");
+
+ const snap=await getDocs(collection(db,"orders"));
+
+ const arr=snap.docs
+  .map(d=>({id:d.id,...d.data()}))
+  .filter(o=>o.status==="Delivered");
+
+ box.innerHTML=`
+ <h2>📜 Delivery History</h2>
+
+ ${arr.map(o=>`
+ <div class="order">
+ <h3>#${o.id.slice(0,8)}</h3>
+ <p>👤 ${o.customerName}</p>
+ <p>🚚 ${o.riderName||"-"}</p>
+ <p>💰 Order: ${money(o.total)}</p>
+ <p>💵 Rider Payment: ${money(o.riderEarning)}</p>
+ <span class="status">Delivered</span>
+ </div>
+ `).join("")||'<div class="empty">History खाली है</div>'}
+ `;
+};
+
+
+/* ================= RIDER ================= */
+
+window.openRider=function(){
+
+ if(currentProfile?.role==="rider"){
+  showRider();
+  return;
+ }
+
+ openModal("🚚 Rider Login",`
+ <label>Email</label>
+ <input id="riderEmail" type="email">
+
+ <label>Password</label>
+ <input id="riderPass" type="password">
+
+ <button class="dark full" onclick="riderLogin()">
+ 🚚 Rider Login
+ </button>
+
+ <br><br>
+
+ <button class="success full" onclick="riderRegister()">
+ ➕ Rider Account बनाएं
+ </button>
+ `);
+};
+
+window.riderLogin=async function(){
+
+ try{
+
+  await signInWithEmailAndPassword(
+   auth,
+   $("riderEmail").value.trim(),
+   $("riderPass").value
+  );
+
+  const snap=await getDoc(
+   doc(db,"users",auth.currentUser.uid)
+  );
+
+  if(!snap.exists()||snap.data().role!=="rider"){
+   await signOut(auth);
+   toast("यह Rider account नहीं है");
+   return;
+  }
+
+  currentProfile=snap.data();
+  closeModal();
+  showRider();
+
+ }catch(e){
+  toast("Rider Login Error: "+e.message);
+ }
+};
+
+window.riderRegister=function(){
+
+ openModal("🚚 Rider Registration",`
+ <label>Name</label>
+ <input id="rrn">
+
+ <label>Email</label>
+ <input id="rre" type="email">
+
+ <label>Password</label>
+ <input id="rrp" type="password">
+
+ <label>Mobile</label>
+ <input id="rrphone">
+
+ <button class="success full" onclick="registerRider()">
+ Create Rider Account
+ </button>
+ `);
+};
+
+window.registerRider=async function(){
+
+ try{
+
+  const name=$("rrn").value.trim();
+  const email=$("rre").value.trim();
+  const pass=$("rrp").value;
+  const phone=$("rrphone").value.trim();
+
+  const cred=await createUserWithEmailAndPassword(
+   auth,email,pass
+  );
+
+  const riderId="AR"+Math.floor(
+   100000+Math.random()*899999
+  );
+
+  await setDoc(doc(db,"users",cred.user.uid),{
+   uid:cred.user.uid,
+   name,email,phone,
+   riderId,
+   role:"rider",
+   online:false,
+   location:null,
+   totalOrders:0,
+   totalEarning:0,
+   createdAt:serverTimestamp()
+  });
+
+  currentProfile={
+   uid:cred.user.uid,
+   name,email,phone,
+   riderId,
+   role:"rider"
+  };
+
+  closeModal();
+  showRider();
+
+ }catch(e){
+  toast("Rider Registration Error: "+e.message);
+ }
+};
+
+async function showRider(){
+
+ openModal("🚚 Aalviro Rider",`
+ <div id="riderApp">
+ <div class="hero">
+  <h2>नमस्ते, ${currentProfile?.name||"Rider"} 👋</h2>
+  <p>Rider ID: <b>${currentProfile?.riderId||"-"}</b></p>
+
+  <button id="onlineBtn"
+   class="danger full"
+   onclick="toggleRiderOnline()">
+   🔴 OFFLINE — Orders रोकें
+  </button>
+ </div>
+
+ <div class="statgrid">
+  <div class="stat">
+   <b id="rOrders">0</b><br>आज के Orders
+  </div>
+  <div class="stat">
+   <b id="rEarn">₹0</b><br>आज की Earning
+  </div>
+ </div>
+
+ <br>
+
+ <div class="card">
+ <h2>📍 Live Location</h2>
+ <p id="locStatus">🔴 Live location बंद है</p>
+
+ <button class="primary full" onclick="startLocation()">
+ 📍 Start Live Location
+ </button>
+
+ <br><br>
+
+ <button class="danger full" onclick="stopLocation()">
+ ⛔ Stop Live Location
+ </button>
+ </div>
+
+ <br>
+
+ <h2>📦 My Deliveries</h2>
+ <div id="riderOrders">Loading...</div>
+
+ <br>
+
+ <button class="dark full" onclick="riderHistory()">
+ 📜 मेरी Delivery History
+ </button>
+
+ <br><br>
+
+ <button class="danger full" onclick="riderLogout()">
+ Logout
+ </button>
+
+ </div>
+ `);
+
+ await loadRiderOrders();
+ updateRiderStats();
+ startRiderRealtime();
+}
+
+window.toggleRiderOnline=async function(){
+
+ if(!currentUser)return;
+
+ const online=!(currentProfile.online===true);
+
+ await updateDoc(
+  doc(db,"users",currentUser.uid),
+  {online,updatedAt:serverTimestamp()}
+ );
+
+ currentProfile.online=online;
+
+ const b=$("onlineBtn");
+
+ if(online){
+  b.innerText="🟢 ONLINE — Orders मिलेंगे";
+  b.className="success full";
+  toast("आप Online हैं");
+ }else{
+  b.innerText="🔴 OFFLINE — Orders रोकें";
+  b.className="danger full";
+  stopLocation();
+ }
+};
+
+window.startLocation=async function(){
+
+ if(!navigator.geolocation){
+  toast("इस browser में location available नहीं है");
+  return;
+ }
+
+ if(!currentUser){
+  toast("Rider login करें");
+  return;
+ }
+
+ try{
+
+  const pos=await new Promise((resolve,reject)=>{
+   navigator.geolocation.getCurrentPosition(
+    resolve,reject,
+    {enableHighAccuracy:true,timeout:10000}
+   );
+  });
+
+  await updateDoc(
+   doc(db,"users",currentUser.uid),
+   {
+    location:{
+     lat:pos.coords.latitude,
+     lng:pos.coords.longitude
+    },
+    locationUpdatedAt:serverTimestamp(),
+    online:true
+   }
+  );
+
+  currentProfile.online=true;
+
+  if(riderWatch)
+   navigator.geolocation.clearWatch(riderWatch);
+
+  riderWatch=navigator.geolocation.watchPosition(
+   async p=>{
+
+    const loc={
+     lat:p.coords.latitude,
+     lng:p.coords.longitude
+    };
+
+    try{
+
+     await updateDoc(
+      doc(db,"users",currentUser.uid),
+      {
+       location:loc,
+       locationUpdatedAt:serverTimestamp(),
+       online:true
+      }
+     );
+
+     /*
+      Assigned orders में भी current location save
+      ताकि customer live location देख सके।
+     */
+
+     const qs=await getDocs(
+      query(
+       collection(db,"orders"),
+       where("riderId","==",currentUser.uid)
+      )
+     );
+
+     for(const d of qs.docs){
+
+      const o=d.data();
+
+      if(o.status!=="Delivered" && o.status!=="Cancelled"){
+       await updateDoc(doc(db,"orders",d.id),{
+        location:loc,
+        updatedAt:serverTimestamp()
+       });
+      }
+     }
+
+    }catch(e){
+     console.log(e);
+    }
+   },
+   e=>toast("Location Error: "+e.message),
+   {enableHighAccuracy:true,maximumAge:5000,timeout:15000}
+  );
+
+  $("locStatus").innerText="🟢 Live location चालू है";
+  toast("Live location START");
+
+ }catch(e){
+  toast("Location Permission दें");
+ }
+};
+
+window.stopLocation=async function(){
+
+ if(riderWatch){
+  navigator.geolocation.clearWatch(riderWatch);
+  riderWatch=null;
+ }
+
+ if(currentUser){
+
+  await updateDoc(
+   doc(db,"users",currentUser.uid),
+   {
+    location:null,
+    locationUpdatedAt:serverTimestamp(),
+    online:false
+   }
+  );
+ }
+
+ if($("locStatus"))
+  $("locStatus").innerText="🔴 Live location बंद है";
+};
+
+async function loadRiderOrders(){
+
+ const box=$("riderOrders");
+ if(!box||!currentUser)return;
+
+ try{
+
+  /*
+   केवल riderId query — composite index नहीं चाहिए।
+  */
+
+  const snap=await getDocs(
+   query(
+    collection(db,"orders"),
+    where("riderId","==",currentUser.uid)
+   )
+  );
+
+  let arr=snap.docs
+   .map(d=>({id:d.id,...d.data()}))
+   .sort((a,b)=>
+    (b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0)
+   );
+
+  box.innerHTML=arr.map(riderOrderHTML).join("")||
+   '<div class="empty">अभी कोई delivery नहीं</div>';
+
+ }catch(e){
+  box.innerHTML=`<div class="empty">${e.message}</div>`;
+ }
+}
+
+function riderOrderHTML(o){
+
+ let action="";
+
+ if(o.status==="Rider Assigned"){
+  action=`
+  <button class="success full"
+  onclick="riderAccept('${o.id}')">
+  ✅ Order Accept करें
+  </button>`;
+ }
+
+ if(o.status==="Confirmed"||o.status==="Preparing"){
+  action=`
+  <button class="success full"
+  onclick="riderAccept('${o.id}')">
+  ✅ Accept Delivery
+  </button>`;
+ }
+
+ if(o.status==="Rider Assigned"||o.status==="Picked Up"){
+  if(o.status==="Picked Up"){
+   action=`
+   <button class="primary full"
+   onclick="riderStatus('${o.id}','On The Way')">
+   🚚 On The Way
+   </button>`;
+  }
+ }
+
+ if(o.status==="On The Way"){
+  action=`
+  <button class="success full"
+  onclick="riderStatus('${o.id}','Delivered')">
+  ✅ Delivered
+  </button>`;
+ }
+
+ return `
+ <div class="order">
+ <h3>📦 Order #${o.id.slice(0,8)}</h3>
+ <span class="status">${o.status}</span>
+
+ <p>👤 ${o.customerName}</p>
+ <p>📞 ${o.customerPhone}</p>
+ <p>📍 ${o.address}</p>
+ <p>💰 Order: ${money(o.total)}</p>
+ <p>💵 Your earning:
+ <b>${money(o.riderEarning||calculateRiderEarning(o.total))}</b>
+ </p>
+
+ ${o.status!=="Delivered"?
+ `<button class="mapbtn"
+ onclick="openCustomerMap('${o.address}')">
+ 🗺️ Customer Address
+ </button>`:""}
+
+ <br><br>
+
+ ${action}
+
+ ${o.status==="Delivered"?
+ `<p>✅ Delivery completed</p>`:""}
+
+ </div>
+ `;
+}
+
+window.openCustomerMap=function(address){
+ window.open(
+  "https://www.google.com/maps/search/?api=1&query="+
+  encodeURIComponent(address),
+  "_blank"
+ );
+};
+
+window.riderAccept=async function(id){
+
+ await updateDoc(doc(db,"orders",id),{
+  status:"Picked Up",
+  updatedAt:serverTimestamp()
+ });
+
+ toast("Order accepted");
+ loadRiderOrders();
+};
+
+window.riderStatus=async function(id,status){
+
+ const os=await getDoc(doc(db,"orders",id));
+
+ if(!os.exists())return;
+
+ const o=os.data();
+
+ const update={
+  status,
+  updatedAt:serverTimestamp()
+ };
+
+ if(status==="Delivered"){
+
+  update.riderEarning=
+   calculateRiderEarning(o.total);
+
+  update.location=null;
+
+  update.paymentStatus=
+   o.payment==="COD"?"Collected":"Paid";
+
+  /*
+   Rider user stats
+  */
+
+  const r=await getDoc(
+   doc(db,"users",currentUser.uid)
+  );
+
+  if(r.exists()){
+
+   const rd=r.data();
+
+   updateDoc(
+    doc(db,"users",currentUser.uid),
+    {
+     totalOrders:Number(rd.totalOrders||0)+1,
+     totalEarning:
+      Number(rd.totalEarning||0)+
+      calculateRiderEarning(o.total)
+    }
+   );
+  }
+ }
+
+ await updateDoc(doc(db,"orders",id),update);
+
+ toast("Status: "+status);
+ loadRiderOrders();
+ updateRiderStats();
+};
+
+async function updateRiderStats(){
+
+ if(!currentUser)return;
+
+ const snap=await getDocs(
+  query(
+   collection(db,"orders"),
+   where("riderId","==",currentUser.uid)
+  )
+ );
+
+ const arr=snap.docs.map(d=>d.data());
+
+ const today=new Date();
+ today.setHours(0,0,0,0);
+
+ const todayArr=arr.filter(o=>
+  o.status==="Delivered" &&
+  o.updatedAt?.seconds &&
+  o.updatedAt.seconds*1000>=today.getTime()
+ );
+
+ const orders=$("rOrders");
+ const earn=$("rEarn");
+
+ if(orders)orders.innerText=todayArr.length;
+
+ if(earn)
+  earn.innerText=money(
+   todayArr.reduce(
+    (a,o)=>a+Number(o.riderEarning||0),0
+   )
+  );
+}
+
+window.riderHistory=async function(){
+
+ if(!currentUser)return;
+
+ const snap=await getDocs(
+  query(
+   collection(db,"orders"),
+   where("riderId","==",currentUser.uid)
+  )
+ );
+
+ const arr=snap.docs
+  .map(d=>({id:d.id,...d.data()}))
+  .filter(o=>o.status==="Delivered");
+
+ openModal("📜 Rider Delivery History",`
+ ${arr.map(o=>`
+ <div class="order">
+  <h3>📦 #${o.id.slice(0,8)}</h3>
+  <p>Customer: ${o.customerName}</p>
+  <p>Order: ${money(o.total)}</p>
+  <p>💵 Earning:
+   <b>${money(o.riderEarning)}</b>
+  </p>
+  <span class="status">Delivered</span>
+ </div>
+ `).join("")||
+ '<div class="empty">History खाली है</div>'}
+ `);
+};
+
+window.riderLogout=async function(){
+
+ stopLocation();
+
+ if(riderListener)
+  riderListener();
+
+ await signOut(auth);
+
+ closeModal();
+ toast("Logout");
+};
+
+
+/* ================= RIDER REALTIME ================= */
+
+function startRiderRealtime(){
+
+ if(!currentUser)return;
+
+ if(riderListener)
+  riderListener();
+
+ /*
+  केवल riderId filter.
+  कोई composite index नहीं।
+ */
+
+ const q=query(
+  collection(db,"orders"),
+  where("riderId","==",currentUser.uid)
+ );
+
+ riderListener=onSnapshot(q,snap=>{
+
+  const current=[];
+
+  snap.forEach(d=>{
+   current.push({id:d.id,...d.data()});
+  });
+
+  const newAssigned=current.filter(o=>
+   (o.status==="Rider Assigned"||
+    o.status==="Confirmed") &&
+   !lastRiderOrderIds.has(o.id)
+  );
+
+  if(lastRiderOrderIds.size>0 && newAssigned.length){
+   playAlarm();
+  }
+
+  lastRiderOrderIds=
+   new Set(current.map(o=>o.id));
+
+  if($("riderOrders"))
+   $("riderOrders").innerHTML=
+    current.map(riderOrderHTML).join("")||
+    '<div class="empty">अभी कोई delivery नहीं</div>';
+
+  updateRiderStats();
+
+ },e=>console.log("Rider listener",e));
+}
+
+function playAlarm(){
+
+ $("alarm").style.display="flex";
+
+ try{
+
+  alarmAudio=new Audio(
+   "data:audio/wav;base64,UklGRlIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="
+  );
+
+  /*
+   Mobile browsers user interaction के बिना audio block
+   कर सकते हैं। इसलिए vibration भी।
+  */
+
+  alarmAudio.loop=true;
+  alarmAudio.play().catch(()=>{});
+
+  if(navigator.vibrate)
+   navigator.vibrate([800,400,800,400,800]);
+
+ }catch(e){}
+}
+
+
+/* ================= STARTUP ================= */
+
+seedProducts();
+
+</script>
+
+</body>
+</html>
