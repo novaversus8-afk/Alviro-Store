@@ -1,0 +1,2844 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Aalviro Store</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ background:#f4f6fb;
+ color:#111827;
+}
+
+header{
+ position:sticky;
+ top:0;
+ z-index:50;
+ background:linear-gradient(100deg,#e91e63,#7c3aed);
+ color:#fff;
+ padding:12px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:8px;
+}
+
+.logo{
+ font-size:24px;
+ font-weight:800;
+}
+
+.nav{
+ display:flex;
+ gap:6px;
+ flex-wrap:wrap;
+ justify-content:flex-end;
+}
+
+button{
+ border:0;
+ border-radius:14px;
+ padding:12px 16px;
+ font-size:15px;
+ font-weight:700;
+ cursor:pointer;
+}
+
+.nav button{
+ background:#fff;
+ color:#111827;
+}
+
+.container{
+ max-width:1100px;
+ margin:auto;
+ padding:18px;
+}
+
+.hero{
+ background:linear-gradient(135deg,#20265c,#181847);
+ color:#fff;
+ padding:32px 24px;
+ border-radius:25px;
+ margin-bottom:25px;
+}
+
+.hero h1{
+ font-size:38px;
+ margin:0 0 10px;
+}
+
+.hero p{
+ font-size:19px;
+}
+
+.categories{
+ display:flex;
+ gap:8px;
+ overflow:auto;
+ margin-bottom:25px;
+}
+
+.categories button{
+ background:#fff;
+ white-space:nowrap;
+}
+
+.categories button.active{
+ background:#e91e63;
+ color:#fff;
+}
+
+.grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+ gap:18px;
+}
+
+.card{
+ background:#fff;
+ border-radius:22px;
+ overflow:hidden;
+ box-shadow:0 5px 20px #00000012;
+}
+
+.card img{
+ width:100%;
+ height:230px;
+ object-fit:cover;
+ background:#eee;
+}
+
+.card-body{
+ padding:18px;
+}
+
+.price{
+ color:#e11d48;
+ font-size:25px;
+ font-weight:800;
+}
+
+.old{
+ color:#999;
+ text-decoration:line-through;
+ margin-left:8px;
+}
+
+.stock{
+ color:#159447;
+ margin:10px 0;
+}
+
+.primary{
+ width:100%;
+ background:#111827;
+ color:#fff;
+ margin-top:10px;
+}
+
+.success{
+ background:#16a34a;
+ color:#fff;
+}
+
+.danger{
+ background:#dc2626;
+ color:#fff;
+}
+
+.warning{
+ background:#f59e0b;
+ color:#fff;
+}
+
+.purple{
+ background:#7c3aed;
+ color:#fff;
+}
+
+.modal{
+ display:none;
+ position:fixed;
+ inset:0;
+ z-index:100;
+ background:#0009;
+ overflow:auto;
+}
+
+.modal-box{
+ background:#fff;
+ max-width:700px;
+ margin:35px auto;
+ border-radius:25px;
+ padding:25px;
+ position:relative;
+}
+
+.close{
+ position:absolute;
+ right:14px;
+ top:14px;
+ width:42px;
+ height:42px;
+ border-radius:50%;
+ background:#eee;
+}
+
+input,textarea,select{
+ width:100%;
+ padding:14px;
+ border:1px solid #d1d5db;
+ border-radius:12px;
+ margin:7px 0 14px;
+ font-size:16px;
+}
+
+textarea{
+ min-height:100px;
+}
+
+label{
+ font-weight:700;
+}
+
+.order{
+ background:#f8fafc;
+ border:1px solid #ddd;
+ padding:18px;
+ border-radius:20px;
+ margin:15px 0;
+}
+
+.status{
+ display:inline-block;
+ padding:8px 13px;
+ border-radius:20px;
+ background:#fef3c7;
+ color:#92400e;
+ font-weight:700;
+}
+
+.item{
+ display:flex;
+ align-items:center;
+ gap:12px;
+ padding:10px 0;
+ border-bottom:1px solid #eee;
+}
+
+.item img{
+ width:65px;
+ height:65px;
+ object-fit:cover;
+ border-radius:10px;
+}
+
+.empty{
+ text-align:center;
+ padding:35px;
+ color:#6b7280;
+}
+
+.admin-tabs{
+ display:flex;
+ gap:8px;
+ overflow:auto;
+ margin-bottom:15px;
+}
+
+.admin-tabs button{
+ background:#e5e7eb;
+}
+
+.admin-tabs button.active{
+ background:#111827;
+ color:#fff;
+}
+
+.small{
+ font-size:13px;
+ color:#6b7280;
+}
+
+.message{
+ padding:10px;
+ margin-top:8px;
+ font-weight:bold;
+}
+
+@media(max-width:600px){
+ .logo{
+  font-size:19px;
+ }
+ .nav button{
+  padding:10px;
+  font-size:13px;
+ }
+ .hero h1{
+  font-size:30px;
+ }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">🛍️ Aalviro Store</div>
+
+<div class="nav">
+
+<button onclick="openOrders()">📦 My Orders</button>
+
+<button onclick="openCart()">
+🛒 <span id="cartCount">0</span>
+</button>
+
+<button id="loginBtn" onclick="openLogin()">
+🔐 Login
+</button>
+
+<button id="logoutBtn"
+onclick="logout()"
+style="display:none">
+🚪 Logout
+</button>
+
+<button onclick="openAdmin()">
+⚙️ Admin
+</button>
+
+</div>
+</header>
+
+
+<div class="container">
+
+<section class="hero">
+
+<h1>🛍️ Aalviro Store</h1>
+
+<p>आपका भरोसेमंद Online Store</p>
+
+<p>
+🚚 Fast Delivery
+&nbsp; • &nbsp;
+💵 Cash on Delivery
+&nbsp; • &nbsp;
+⚡ Easy Order
+</p>
+
+</section>
+
+
+<div class="categories">
+
+<button class="active"
+onclick="filterProducts('All',this)">
+All
+</button>
+
+<button onclick="filterProducts('Grocery',this)">
+Grocery
+</button>
+
+<button onclick="filterProducts('Fashion',this)">
+Fashion
+</button>
+
+<button onclick="filterProducts('Electronics',this)">
+Electronics
+</button>
+
+<button onclick="filterProducts('Other',this)">
+Other
+</button>
+
+</div>
+
+
+<h2>🔥 Products</h2>
+
+<div id="products" class="grid"></div>
+
+</div>
+
+
+<!-- CUSTOMER LOGIN -->
+
+<div id="loginModal" class="modal">
+
+<div class="modal-box">
+
+<button class="close"
+onclick="closeModal('loginModal')">
+✕
+</button>
+
+<h2>🔐 Customer Login</h2>
+
+<label>Email</label>
+
+<input id="loginEmail"
+type="email"
+placeholder="आपका Email">
+
+
+<label>Password</label>
+
+<input id="loginPassword"
+type="password"
+placeholder="Password">
+
+
+<button class="primary"
+onclick="login()">
+🔐 Login
+</button>
+
+
+<hr>
+
+<h3>नया Customer?</h3>
+
+<button class="success"
+style="width:100%"
+onclick="openRegister()">
+👤 Create Account
+</button>
+
+<p id="loginMsg"></p>
+
+</div>
+</div>
+
+
+<!-- REGISTER -->
+
+<div id="registerModal" class="modal">
+
+<div class="modal-box">
+
+<button class="close"
+onclick="closeModal('registerModal')">
+✕
+</button>
+
+<h2>👤 Customer Register</h2>
+
+<label>Name</label>
+
+<input id="regName"
+placeholder="पूरा नाम">
+
+
+<label>Mobile</label>
+
+<input id="regPhone"
+placeholder="मोबाइल नंबर">
+
+
+<label>Email</label>
+
+<input id="regEmail"
+type="email"
+placeholder="Email">
+
+
+<label>Password</label>
+
+<input id="regPassword"
+type="password"
+placeholder="कम से कम 6 characters">
+
+
+<button class="success"
+style="width:100%"
+onclick="register()">
+✅ Create Account
+</button>
+
+<p id="regMsg"></p>
+
+</div>
+</div>
+
+
+<!-- CART -->
+
+<div id="cartModal" class="modal">
+
+<div class="modal-box">
+
+<button class="close"
+onclick="closeModal('cartModal')">
+✕
+</button>
+
+<h2>🛒 My Cart</h2>
+
+<div id="cartItems"></div>
+
+<h3 id="cartTotal">Total: ₹0</h3>
+
+<button class="success"
+style="width:100%"
+onclick="checkout()">
+📦 Place Order
+</button>
+
+</div>
+</div>
+
+
+<!-- CHECKOUT -->
+
+<div id="checkoutModal" class="modal">
+
+<div class="modal-box">
+
+<button class="close"
+onclick="closeModal('checkoutModal')">
+✕
+</button>
+
+<h2>📦 Delivery Details</h2>
+
+<label>Customer Name</label>
+
+<input id="orderName">
+
+
+<label>Mobile Number</label>
+
+<input id="orderPhone">
+
+
+<label>Full Address</label>
+
+<textarea
+id="orderAddress"
+placeholder="House, Street, City, State, PIN"></textarea>
+
+
+<label>Payment</label>
+
+<select id="payment">
+
+<option>
+Cash on Delivery
+</option>
+
+</select>
+
+
+<button class="success"
+style="width:100%"
+onclick="placeOrder()">
+
+✅ Confirm Order
+
+</button>
+
+<p id="checkoutMsg"></p>
+
+</div>
+</div>
+
+
+<!-- CUSTOMER ORDERS -->
+
+<div id="ordersModal" class="modal">
+
+<div class="modal-box">
+
+<button class="close"
+onclick="closeModal('ordersModal')">
+✕
+</button>
+
+<h2>📦 My Orders</h2>
+
+<div id="myOrders"></div>
+
+</div>
+</div>
+
+
+<!-- ADMIN LOGIN -->
+
+<div id="adminLoginModal" class="modal">
+
+<div class="modal-box">
+
+<button class="close"
+onclick="closeModal('adminLoginModal')">
+✕
+</button>
+
+<h2>⚙️ Admin Login</h2>
+
+
+<label>Admin Email</label>
+
+<input id="adminEmail"
+type="email"
+value="aalamarshlan05@gmail.com">
+
+
+<label>Admin Password</label>
+
+<input id="adminPassword"
+type="password"
+placeholder="Firebase Password">
+
+
+<button class="success"
+style="width:100%"
+onclick="adminLogin()">
+
+🔐 Admin Login
+
+</button>
+
+<p id="adminLoginMsg"></p>
+
+</div>
+</div>
+
+
+<!-- ADMIN PANEL -->
+
+<div id="adminModal" class="modal">
+
+<div class="modal-box"
+style="max-width:1000px">
+
+<button class="close"
+onclick="closeModal('adminModal')">
+✕
+</button>
+
+
+<h2>⚙️ Aalviro Admin Panel</h2>
+
+
+<div class="admin-tabs">
+
+<button class="active"
+onclick="adminTab('products',this)">
+📦 Products
+</button>
+
+<button onclick="adminTab('orders',this)">
+🛒 Orders
+</button>
+
+</div>
+
+
+<!-- ADMIN PRODUCTS -->
+
+<div id="adminProducts">
+
+<h3>➕ Add New Product</h3>
+
+
+<label>Product Name</label>
+
+<input id="pName"
+placeholder="उदाहरण: Wireless Headphones">
+
+
+<label>Description</label>
+
+<textarea
+id="pDesc"
+placeholder="Product की जानकारी"></textarea>
+
+
+<label>Price</label>
+
+<input id="pPrice"
+type="number"
+placeholder="299">
+
+
+<label>Old Price</label>
+
+<input id="pOldPrice"
+type="number"
+placeholder="599">
+
+
+<label>Stock</label>
+
+<input id="pStock"
+type="number"
+placeholder="10">
+
+
+<label>Category</label>
+
+<select id="pCategory">
+
+<option>Grocery</option>
+
+<option>Fashion</option>
+
+<option>Electronics</option>
+
+<option>Other</option>
+
+</select>
+
+
+<label>
+Product Photo — Gallery से चुनें
+</label>
+
+<input id="pImage"
+type="file"
+accept="image/*">
+
+
+<button class="success"
+style="width:100%"
+onclick="addProduct()">
+
+➕ Add Product
+
+</button>
+
+<p id="productMsg"></p>
+
+
+<hr>
+
+<h3>📦 Current Products</h3>
+
+<div id="adminProductList"></div>
+
+</div>
+
+
+<!-- ADMIN ORDERS -->
+
+<div id="adminOrders"
+style="display:none">
+
+<h3>🛒 All Customer Orders</h3>
+
+<div id="adminOrderList"></div>
+
+</div>
+
+</div>
+</div>
+
+
+<!-- FIREBASE -->
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+
+<script>
+
+/* =========================
+   FIREBASE CONFIG
+========================= */
+
+const firebaseConfig = {
+
+ apiKey:
+ "AIzaSyDMmg81OOUPv0_-ZkZeNZazPodV7GDn7ew",
+
+ authDomain:
+ "aalviro-store-5bc7a.firebaseapp.com",
+
+ projectId:
+ "aalviro-store-5bc7a",
+
+ storageBucket:
+ "aalviro-store-5bc7a.firebasestorage.app",
+
+ messagingSenderId:
+ "739678310618",
+
+ appId:
+ "1:739678310618:web:edcc916e13324771d315e3",
+
+ measurementId:
+ "G-N8T1TYG5TD"
+
+};
+
+
+firebase.initializeApp(firebaseConfig);
+
+const auth=firebase.auth();
+
+const db=firebase.firestore();
+
+
+/* ADMIN EMAIL */
+
+const ADMIN_EMAIL=
+"aalamarshlan05@gmail.com";
+
+
+let currentUser=null;
+
+let allProducts=[];
+
+let selectedCategory="All";
+
+
+let cart=
+JSON.parse(
+ localStorage.getItem("aalviroCart") || "[]"
+);
+
+
+/* =========================
+ AUTH STATE
+========================= */
+
+auth.onAuthStateChanged(user=>{
+
+ currentUser=user;
+
+ if(user){
+
+  document.getElementById("loginBtn")
+  .style.display="none";
+
+  document.getElementById("logoutBtn")
+  .style.display="block";
+
+ }else{
+
+  document.getElementById("loginBtn")
+  .style.display="block";
+
+  document.getElementById("logoutBtn")
+  .style.display="none";
+
+ }
+
+ updateCartCount();
+
+});
+
+
+/* =========================
+ REGISTER
+========================= */
+
+async function register(){
+
+ const name=
+ document.getElementById("regName")
+ .value.trim();
+
+ const phone=
+ document.getElementById("regPhone")
+ .value.trim();
+
+ const email=
+ document.getElementById("regEmail")
+ .value.trim();
+
+ const password=
+ document.getElementById("regPassword")
+ .value;
+
+
+ if(!name ||
+ !phone ||
+ !email ||
+ password.length<6){
+
+  document.getElementById("regMsg")
+  .innerText=
+  "❌ सभी जानकारी भरें। Password कम से कम 6 characters का होना चाहिए।";
+
+  return;
+
+ }
+
+
+ try{
+
+  const result=
+  await auth.createUserWithEmailAndPassword(
+   email,
+   password
+  );
+
+
+  await db.collection("customers")
+  .doc(result.user.uid)
+  .set({
+
+   uid:result.user.uid,
+
+   name:name,
+
+   phone:phone,
+
+   email:email,
+
+   createdAt:
+   firebase.firestore.FieldValue
+   .serverTimestamp()
+
+  });
+
+
+  document.getElementById("regMsg")
+  .innerText=
+  "✅ Account बन गया!";
+
+
+  setTimeout(()=>{
+
+   closeModal("registerModal");
+
+  },800);
+
+
+ }catch(error){
+
+  document.getElementById("regMsg")
+  .innerText=
+  "❌ "+error.message;
+
+ }
+
+}
+
+
+/* =========================
+ LOGIN
+========================= */
+
+async function login(){
+
+ const email=
+ document.getElementById("loginEmail")
+ .value.trim();
+
+ const password=
+ document.getElementById("loginPassword")
+ .value;
+
+
+ try{
+
+  await auth.signInWithEmailAndPassword(
+   email,
+   password
+  );
+
+
+  document.getElementById("loginMsg")
+  .innerText=
+  "✅ Login successful";
+
+
+  setTimeout(()=>{
+
+   closeModal("loginModal");
+
+  },700);
+
+
+ }catch(error){
+
+  document.getElementById("loginMsg")
+  .innerText=
+  "❌ Email या Password गलत है।";
+
+ }
+
+}
+
+
+/* =========================
+ ADMIN LOGIN
+========================= */
+
+async function adminLogin(){
+
+ const email=
+ document.getElementById("adminEmail")
+ .value.trim();
+
+ const password=
+ document.getElementById("adminPassword")
+ .value;
+
+
+ if(email.toLowerCase() !==
+ ADMIN_EMAIL.toLowerCase()){
+
+  document.getElementById("adminLoginMsg")
+  .innerText=
+  "❌ यह Admin Email नहीं है।";
+
+  return;
+
+ }
+
+
+ try{
+
+  await auth.signInWithEmailAndPassword(
+   email,
+   password
+  );
+
+
+  closeModal("adminLoginModal");
+
+  openAdminPanel();
+
+
+ }catch(error){
+
+  document.getElementById("adminLoginMsg")
+  .innerText=
+  "❌ Login failed: "+error.message;
+
+ }
+
+}
+
+
+/* =========================
+ LOGOUT
+========================= */
+
+async function logout(){
+
+ await auth.signOut();
+
+ alert("✅ Logout हो गया।");
+
+}
+
+
+/* =========================
+ LOAD PRODUCTS
+========================= */
+
+async function loadProducts(){
+
+ try{
+
+  const snapshot=
+  await db.collection("products").get();
+
+
+  allProducts=[];
+
+
+  snapshot.forEach(doc=>{
+
+   allProducts.push({
+
+    id:doc.id,
+
+    ...doc.data()
+
+   });
+
+  });
+
+
+  renderProducts();
+
+
+ }catch(error){
+
+  console.error(error);
+
+  document.getElementById("products")
+  .innerHTML=
+  "<div class='empty'>❌ Products load नहीं हुए। Firestore Rules check करें।</div>";
+
+ }
+
+}
+
+
+/* =========================
+ RENDER PRODUCTS
+========================= */
+
+function renderProducts(){
+
+ const box=
+ document.getElementById("products");
+
+
+ let list=allProducts;
+
+
+ if(selectedCategory!=="All"){
+
+  list=
+  list.filter(
+   p=>p.category===selectedCategory
+  );
+
+ }
+
+
+ if(!list.length){
+
+  box.innerHTML=
+  "<div class='empty'>📦 अभी कोई product नहीं है।</div>";
+
+  return;
+
+ }
+
+
+ box.innerHTML=
+ list.map(p=>`
+
+ <div class="card">
+
+  <img
+   src="${p.image || ''}"
+   alt="Product">
+
+  <div class="card-body">
+
+   <h3>
+    ${escapeHTML(p.name || "")}
+   </h3>
+
+   <p>
+    ${escapeHTML(p.description || "")}
+   </p>
+
+   <div>
+
+    <span class="price">
+     ₹${Number(p.price||0)}
+    </span>
+
+    ${
+     p.oldPrice
+     ?
+     `<span class="old">
+       ₹${Number(p.oldPrice)}
+      </span>`
+     :
+     ""
+    }
+
+   </div>
+
+
+   <div class="stock">
+
+    ${
+     Number(p.stock||0)>0
+     ?
+     "✅ Stock: "+Number(p.stock)
+     :
+     "❌ Out of Stock"
+    }
+
+   </div>
+
+
+   <button
+    class="primary"
+    ${
+     Number(p.stock||0)<=0
+     ?
+     "disabled"
+     :
+     ""
+    }
+    onclick="addToCart('${p.id}')">
+
+    🛒 Cart में डालें
+
+   </button>
+
+  </div>
+
+ </div>
+
+ `).join("");
+
+}
+
+
+/* =========================
+ FILTER
+========================= */
+
+function filterProducts(category,button){
+
+ selectedCategory=category;
+
+
+ document
+ .querySelectorAll(".categories button")
+ .forEach(
+  x=>x.classList.remove("active")
+ );
+
+
+ button.classList.add("active");
+
+
+ renderProducts();
+
+}
+
+
+/* =========================
+ CART
+========================= */
+
+function saveCart(){
+
+ localStorage.setItem(
+  "aalviroCart",
+  JSON.stringify(cart)
+ );
+
+ updateCartCount();
+
+}
+
+
+function updateCartCount(){
+
+ document.getElementById("cartCount")
+ .innerText=
+ cart.reduce(
+  (sum,item)=>sum+item.qty,
+  0
+ );
+
+}
+
+
+function addToCart(id){
+
+ const product=
+ allProducts.find(
+  p=>p.id===id
+ );
+
+
+ if(!product)return;
+
+
+ if(Number(product.stock||0)<=0){
+
+  alert("❌ यह product Out of Stock है।");
+
+  return;
+
+ }
+
+
+ const existing=
+ cart.find(
+  item=>item.id===id
+ );
+
+
+ if(existing){
+
+  if(existing.qty <
+  Number(product.stock)){
+
+   existing.qty++;
+
+  }else{
+
+   alert(
+    "❌ जितना stock उपलब्ध है उतना ही add कर सकते हैं।"
+   );
+
+   return;
+
+  }
+
+ }else{
+
+  cart.push({
+
+   id:product.id,
+
+   name:product.name,
+
+   price:Number(product.price),
+
+   image:product.image || "",
+
+   qty:1
+
+  });
+
+ }
+
+
+ saveCart();
+
+ alert("✅ Product Cart में add हो गया।");
+
+}
+
+
+/* =========================
+ OPEN CART
+========================= */
+
+function openCart(){
+
+ document.getElementById("cartModal")
+ .style.display="block";
+
+
+ const box=
+ document.getElementById("cartItems");
+
+
+ if(!cart.length){
+
+  box.innerHTML=
+  "<div class='empty'>🛒 Cart खाली है।</div>";
+
+  document.getElementById("cartTotal")
+  .innerText="Total: ₹0";
+
+  return;
+
+ }
+
+
+ let total=0;
+
+
+ box.innerHTML=
+ cart.map((item,index)=>{
+
+  total+=item.price*item.qty;
+
+
+  return `
+
+  <div class="item">
+
+   <img
+    src="${item.image || ''}">
+
+   <div style="flex:1">
+
+    <b>
+     ${escapeHTML(item.name)}
+    </b>
+
+    <div>
+     ₹${item.price} × ${item.qty}
+    </div>
+
+   </div>
+
+   <button
+    class="danger"
+    onclick="removeCart(${index})">
+
+    ✕
+
+   </button>
+
+  </div>
+
+  `;
+
+ }).join("");
+
+
+ document.getElementById("cartTotal")
+ .innerText=
+ "Total: ₹"+total;
+
+}
+
+
+function removeCart(index){
+
+ cart.splice(index,1);
+
+ saveCart();
+
+ openCart();
+
+}
+
+
+/* =========================
+ CHECKOUT
+========================= */
+
+async function checkout(){
+
+ if(!currentUser){
+
+  closeModal("cartModal");
+
+  openLogin();
+
+  alert(
+   "पहले Customer Login करें।"
+  );
+
+  return;
+
+ }
+
+
+ if(!cart.length){
+
+  alert("Cart खाली है।");
+
+  return;
+
+ }
+
+
+ try{
+
+  const doc=
+  await db.collection("customers")
+  .doc(currentUser.uid)
+  .get();
+
+
+  if(doc.exists){
+
+   const data=doc.data();
+
+
+   document.getElementById("orderName")
+   .value=data.name || "";
+
+
+   document.getElementById("orderPhone")
+   .value=data.phone || "";
+
+  }
+
+ }catch(error){}
+
+
+ closeModal("cartModal");
+
+ document.getElementById("checkoutModal")
+ .style.display="block";
+
+}
+
+
+/* =========================
+ PLACE ORDER
+========================= */
+
+async function placeOrder(){
+
+ if(!currentUser){
+
+  alert("पहले Login करें।");
+
+  return;
+
+ }
+
+
+ const name=
+ document.getElementById("orderName")
+ .value.trim();
+
+ const phone=
+ document.getElementById("orderPhone")
+ .value.trim();
+
+ const address=
+ document.getElementById("orderAddress")
+ .value.trim();
+
+ const payment=
+ document.getElementById("payment")
+ .value;
+
+
+ if(!name ||
+ !phone ||
+ !address){
+
+  document.getElementById("checkoutMsg")
+  .innerText=
+  "❌ Name, Mobile और Address भरें।";
+
+  return;
+
+ }
+
+
+ try{
+
+  let total=0;
+
+
+  cart.forEach(item=>{
+
+   total+=
+   item.price*item.qty;
+
+  });
+
+
+  const items=
+  cart.map(item=>({
+
+   productId:item.id,
+
+   name:item.name,
+
+   price:item.price,
+
+   qty:item.qty,
+
+   image:item.image || ""
+
+  }));
+
+
+  const orderRef=
+  db.collection("orders").doc();
+
+
+  await db.runTransaction(
+  async transaction=>{
+
+
+   for(const item of cart){
+
+    const productRef=
+    db.collection("products")
+    .doc(item.id);
+
+
+    const productSnap=
+    await transaction.get(
+     productRef
+    );
+
+
+    if(!productSnap.exists){
+
+     throw new Error(
+      "Product नहीं मिला।"
+     );
+
+    }
+
+
+    const product=
+    productSnap.data();
+
+
+    const stock=
+    Number(product.stock||0);
+
+
+    if(stock<item.qty){
+
+     throw new Error(
+      product.name+
+      " का stock कम है।"
+     );
+
+    }
+
+
+    transaction.update(
+     productRef,
+     {
+      stock:stock-item.qty
+     }
+    );
+
+   }
+
+
+   transaction.set(
+    orderRef,
+    {
+
+     orderId:orderRef.id,
+
+     customerId:
+     currentUser.uid,
+
+     customerEmail:
+     currentUser.email,
+
+     customerName:name,
+
+     phone:phone,
+
+     address:address,
+
+     payment:payment,
+
+     items:items,
+
+     total:total,
+
+     status:"Processing",
+
+     deliveryAccepted:false,
+
+     createdAt:
+     firebase.firestore.FieldValue
+     .serverTimestamp()
+
+    }
+   );
+
+  });
+
+
+ cart=[];
+
+ saveCart();
+
+
+ closeModal("checkoutModal");
+
+
+ alert(
+  "✅ Order Successfully Placed!\n\n"+
+  "Order ID:\n"+
+  orderRef.id
+ );
+
+
+ openOrders();
+
+
+}catch(error){
+
+ document.getElementById("checkoutMsg")
+ .innerText=
+ "❌ "+error.message;
+
+ }
+
+}
+
+
+/* =========================
+ CUSTOMER ORDERS
+========================= */
+
+async function openOrders(){
+
+ if(!currentUser){
+
+  openLogin();
+
+  alert(
+   "My Orders देखने के लिए Login करें।"
+  );
+
+  return;
+
+ }
+
+
+ document.getElementById("ordersModal")
+ .style.display="block";
+
+
+ const box=
+ document.getElementById("myOrders");
+
+
+ box.innerHTML=
+ "<div class='empty'>⏳ Orders loading...</div>";
+
+
+ try{
+
+  const snapshot=
+  await db.collection("orders")
+  .where(
+   "customerId",
+   "==",
+   currentUser.uid
+  )
+  .get();
+
+
+  let orders=[];
+
+
+  snapshot.forEach(doc=>{
+
+   orders.push({
+
+    id:doc.id,
+
+    ...doc.data()
+
+   });
+
+  });
+
+
+  orders.sort((a,b)=>{
+
+   const A=
+   a.createdAt?.seconds || 0;
+
+   const B=
+   b.createdAt?.seconds || 0;
+
+   return B-A;
+
+  });
+
+
+  if(!orders.length){
+
+   box.innerHTML=
+   "<div class='empty'>📦 अभी कोई Order नहीं है।</div>";
+
+   return;
+
+  }
+
+
+  box.innerHTML=
+  orders.map(order=>`
+
+  <div class="order">
+
+   <h3>
+    📦 Order #${order.orderId}
+   </h3>
+
+
+   <span class="status">
+    ${statusText(order.status)}
+   </span>
+
+
+   <p>
+    👤 <b>
+    ${escapeHTML(order.customerName||"")}
+    </b>
+   </p>
+
+
+   <p>
+    📞 ${escapeHTML(order.phone||"")}
+   </p>
+
+
+   <p>
+    📍 ${escapeHTML(order.address||"")}
+   </p>
+
+
+   <hr>
+
+
+   ${
+    (order.items||[])
+    .map(item=>`
+
+    <div class="item">
+
+     <img src="${item.image||''}">
+
+     <div>
+
+      <b>
+       ${escapeHTML(item.name)}
+      </b>
+
+      <br>
+
+      ₹${item.price}
+      ×
+      ${item.qty}
+
+     </div>
+
+    </div>
+
+    `).join("")
+   }
+
+
+   <h3>
+    💰 Total: ₹${order.total}
+   </h3>
+
+
+   ${
+    order.status==="Delivered"
+    &&
+    !order.deliveryAccepted
+    ?
+    `
+
+    <button
+     class="success"
+     style="width:100%"
+     onclick="acceptDelivery('${order.id}')">
+
+     ✅ Accept Delivery
+
+    </button>
+
+    `
+    :
+    ""
+   }
+
+
+   ${
+    order.deliveryAccepted
+    ?
+
+    `<p style="
+      color:#159447;
+      font-weight:bold">
+
+      ✅ Delivery Accepted
+
+    </p>`
+
+    :
+    ""
+   }
+
+
+   <p class="small">
+    ${formatDate(order.createdAt)}
+   </p>
+
+
+  </div>
+
+  `).join("");
+
+
+ }catch(error){
+
+  box.innerHTML=
+  "<div class='empty'>❌ Orders load नहीं हुए।</div>";
+
+ }
+
+}
+
+
+/* =========================
+ ACCEPT DELIVERY
+========================= */
+
+async function acceptDelivery(orderId){
+
+ if(!currentUser)return;
+
+
+ try{
+
+  const ref=
+  db.collection("orders")
+  .doc(orderId);
+
+
+  const snap=
+  await ref.get();
+
+
+  if(!snap.exists){
+
+   alert("Order नहीं मिला।");
+
+   return;
+
+  }
+
+
+  const data=snap.data();
+
+
+  if(
+   data.customerId
+   !==
+   currentUser.uid
+  ){
+
+   alert("Unauthorized");
+
+   return;
+
+  }
+
+
+  if(data.status!=="Delivered"){
+
+   alert(
+    "Admin ने अभी order Delivered नहीं किया है।"
+   );
+
+   return;
+
+  }
+
+
+  await ref.update({
+
+   deliveryAccepted:true,
+
+   deliveryAcceptedAt:
+   firebase.firestore.FieldValue
+   .serverTimestamp()
+
+  });
+
+
+  alert(
+   "✅ Delivery successfully accepted."
+  );
+
+
+  openOrders();
+
+
+ }catch(error){
+
+  alert("❌ "+error.message);
+
+ }
+
+}
+
+
+/* =========================
+ ADMIN OPEN
+========================= */
+
+function openAdmin(){
+
+ if(
+  currentUser &&
+  currentUser.email.toLowerCase()
+  ===
+  ADMIN_EMAIL.toLowerCase()
+ ){
+
+  openAdminPanel();
+
+ }else{
+
+  document.getElementById(
+   "adminLoginModal"
+  ).style.display="block";
+
+ }
+
+}
+
+
+/* =========================
+ ADMIN PANEL
+========================= */
+
+function openAdminPanel(){
+
+ document.getElementById("adminModal")
+ .style.display="block";
+
+
+ loadAdminProducts();
+
+ loadAdminOrders();
+
+}
+
+
+/* =========================
+ ADMIN TABS
+========================= */
+
+function adminTab(tab,button){
+
+ document
+ .querySelectorAll(".admin-tabs button")
+ .forEach(
+  b=>b.classList.remove("active")
+ );
+
+
+ button.classList.add("active");
+
+
+ if(tab==="products"){
+
+  document.getElementById(
+   "adminProducts"
+  ).style.display="block";
+
+
+  document.getElementById(
+   "adminOrders"
+  ).style.display="none";
+
+
+ }else{
+
+  document.getElementById(
+   "adminProducts"
+  ).style.display="none";
+
+
+  document.getElementById(
+   "adminOrders"
+  ).style.display="block";
+
+
+  loadAdminOrders();
+
+ }
+
+}
+
+
+/* =========================
+ IMAGE COMPRESS
+========================= */
+
+function compressImage(file){
+
+ return new Promise(
+ (resolve,reject)=>{
+
+  const reader=
+  new FileReader();
+
+
+  reader.onload=function(event){
+
+   const img=
+   new Image();
+
+
+   img.onload=function(){
+
+    const canvas=
+    document.createElement("canvas");
+
+
+    const max=900;
+
+
+    let width=img.width;
+
+    let height=img.height;
+
+
+    if(width>height){
+
+     if(width>max){
+
+      height=
+      height*max/width;
+
+      width=max;
+
+     }
+
+    }else{
+
+     if(height>max){
+
+      width=
+      width*max/height;
+
+      height=max;
+
+     }
+
+    }
+
+
+    canvas.width=width;
+
+    canvas.height=height;
+
+
+    const ctx=
+    canvas.getContext("2d");
+
+
+    ctx.drawImage(
+     img,
+     0,
+     0,
+     width,
+     height
+    );
+
+
+    const data=
+    canvas.toDataURL(
+     "image/jpeg",
+     .72
+    );
+
+
+    resolve(data);
+
+   };
+
+
+   img.onerror=reject;
+
+   img.src=event.target.result;
+
+  };
+
+
+  reader.onerror=reject;
+
+  reader.readAsDataURL(file);
+
+ });
+
+}
+
+
+/* =========================
+ ADD PRODUCT
+========================= */
+
+async function addProduct(){
+
+ if(
+  !currentUser ||
+  currentUser.email.toLowerCase()
+  !==
+  ADMIN_EMAIL.toLowerCase()
+ ){
+
+  alert(
+   "पहले Admin Login करें।"
+  );
+
+  return;
+
+ }
+
+
+ const name=
+ document.getElementById("pName")
+ .value.trim();
+
+
+ const desc=
+ document.getElementById("pDesc")
+ .value.trim();
+
+
+ const price=
+ Number(
+  document.getElementById("pPrice")
+  .value
+ );
+
+
+ const oldPrice=
+ Number(
+  document.getElementById("pOldPrice")
+  .value || 0
+ );
+
+
+ const stock=
+ Number(
+  document.getElementById("pStock")
+  .value
+ );
+
+
+ const category=
+ document.getElementById("pCategory")
+ .value;
+
+
+ const file=
+ document.getElementById("pImage")
+ .files[0];
+
+
+ if(
+  !name ||
+  !price ||
+  !file
+ ){
+
+  document.getElementById("productMsg")
+  .innerText=
+  "❌ Product Name, Price और Photo जरूरी है।";
+
+  return;
+
+ }
+
+
+ try{
+
+  document.getElementById("productMsg")
+  .innerText=
+  "⏳ Photo तैयार हो रही है...";
+
+
+  const image=
+  await compressImage(file);
+
+
+  if(image.length>900000){
+
+   throw new Error(
+    "Photo बहुत बड़ी है। छोटी photo चुनें।"
+   );
+
+  }
+
+
+  await db.collection("products")
+  .add({
+
+   name:name,
+
+   description:desc,
+
+   price:price,
+
+   oldPrice:oldPrice,
+
+   stock:stock,
+
+   category:category,
+
+   image:image,
+
+   createdAt:
+   firebase.firestore.FieldValue
+   .serverTimestamp(),
+
+   createdBy:
+   currentUser.uid
+
+  });
+
+
+  document.getElementById("productMsg")
+  .innerText=
+  "✅ Product successfully added!";
+
+
+  document.getElementById("pName")
+  .value="";
+
+
+  document.getElementById("pDesc")
+  .value="";
+
+
+  document.getElementById("pPrice")
+  .value="";
+
+
+  document.getElementById("pOldPrice")
+  .value="";
+
+
+  document.getElementById("pStock")
+  .value="";
+
+
+  document.getElementById("pImage")
+  .value="";
+
+
+  await loadProducts();
+
+  await loadAdminProducts();
+
+
+ }catch(error){
+
+  document.getElementById("productMsg")
+  .innerText=
+  "❌ "+error.message;
+
+ }
+
+}
+
+
+/* =========================
+ ADMIN PRODUCTS
+========================= */
+
+async function loadAdminProducts(){
+
+ const box=
+ document.getElementById(
+  "adminProductList"
+ );
+
+
+ try{
+
+  const snapshot=
+  await db.collection("products")
+  .get();
+
+
+  if(snapshot.empty){
+
+   box.innerHTML=
+   "<div class='empty'>अभी कोई Product नहीं है।</div>";
+
+   return;
+
+  }
+
+
+  let html="";
+
+
+  snapshot.forEach(doc=>{
+
+   const p=doc.data();
+
+
+   html+=`
+
+   <div class="order">
+
+    <div style="
+     display:flex;
+     gap:12px;
+     align-items:center">
+
+     <img
+      src="${p.image||''}"
+      style="
+      width:75px;
+      height:75px;
+      object-fit:cover;
+      border-radius:12px">
+
+
+     <div style="flex:1">
+
+      <b>
+       ${escapeHTML(p.name||"")}
+      </b>
+
+      <div>
+       ₹${p.price}
+      </div>
+
+      <div>
+       Stock: ${p.stock}
+      </div>
+
+      <div class="small">
+       ${p.category||""}
+      </div>
+
+     </div>
+
+
+     <button
+      class="danger"
+      onclick="deleteProduct('${doc.id}')">
+
+      🗑️
+
+     </button>
+
+    </div>
+
+   </div>
+
+   `;
+
+  });
+
+
+  box.innerHTML=html;
+
+
+ }catch(error){
+
+  box.innerHTML=
+  "❌ "+error.message;
+
+ }
+
+}
+
+
+/* =========================
+ DELETE PRODUCT
+========================= */
+
+async function deleteProduct(id){
+
+ if(
+  !confirm(
+   "क्या आप यह Product delete करना चाहते हैं?"
+  )
+ )return;
+
+
+ try{
+
+  await db.collection("products")
+  .doc(id)
+  .delete();
+
+
+  await loadProducts();
+
+  await loadAdminProducts();
+
+
+ }catch(error){
+
+  alert("❌ "+error.message);
+
+ }
+
+}
+
+
+/* =========================
+ ADMIN ORDERS
+========================= */
+
+async function loadAdminOrders(){
+
+ const box=
+ document.getElementById(
+  "adminOrderList"
+ );
+
+
+ try{
+
+  const snapshot=
+  await db.collection("orders")
+  .get();
+
+
+  let orders=[];
+
+
+  snapshot.forEach(doc=>{
+
+   orders.push({
+
+    id:doc.id,
+
+    ...doc.data()
+
+   });
+
+  });
+
+
+  orders.sort((a,b)=>{
+
+   const A=
+   a.createdAt?.seconds || 0;
+
+   const B=
+   b.createdAt?.seconds || 0;
+
+   return B-A;
+
+  });
+
+
+  if(!orders.length){
+
+   box.innerHTML=
+   "<div class='empty'>📦 अभी कोई Order नहीं है।</div>";
+
+   return;
+
+  }
+
+
+  box.innerHTML=
+  orders.map(order=>`
+
+  <div class="order">
+
+   <h3>
+    📦 ${order.orderId}
+   </h3>
+
+
+   <span class="status">
+    ${statusText(order.status)}
+   </span>
+
+
+   <p>
+    👤 <b>
+    ${escapeHTML(order.customerName||"")}
+    </b>
+   </p>
+
+
+   <p>
+    📧 ${escapeHTML(order.customerEmail||"")}
+   </p>
+
+
+   <p>
+    📞 ${escapeHTML(order.phone||"")}
+   </p>
+
+
+   <p>
+    📍 ${escapeHTML(order.address||"")}
+   </p>
+
+
+   <hr>
+
+
+   ${
+    (order.items||[])
+    .map(item=>`
+
+    <div>
+
+     🛍️
+     ${escapeHTML(item.name)}
+     ×
+     ${item.qty}
+
+     —
+     ₹${item.price*item.qty}
+
+    </div>
+
+    `).join("")
+   }
+
+
+   <h3>
+    💰 ₹${order.total}
+   </h3>
+
+
+   <label>
+    Order Status
+   </label>
+
+
+   <select
+    onchange="
+    changeOrderStatus(
+     '${order.id}',
+     this.value
+    )">
+
+
+    <option
+     value="Processing"
+     ${
+      order.status==="Processing"
+      ?"selected":""
+     }>
+
+     Processing
+
+    </option>
+
+
+    <option
+     value="Shipped"
+     ${
+      order.status==="Shipped"
+      ?"selected":""
+     }>
+
+     Shipped
+
+    </option>
+
+
+    <option
+     value="Delivered"
+     ${
+      order.status==="Delivered"
+      ?"selected":""
+     }>
+
+     Delivered
+
+    </option>
+
+
+    <option
+     value="Cancelled"
+     ${
+      order.status==="Cancelled"
+      ?"selected":""
+     }>
+
+     Cancelled
+
+    </option>
+
+
+   </select>
+
+
+   ${
+    order.deliveryAccepted
+    ?
+
+    `<p style="
+    color:#159447;
+    font-weight:bold">
+
+    ✅ Customer ने Delivery Accept कर दी
+
+    </p>`
+
+    :
+    ""
+   }
+
+
+   <p class="small">
+    ${formatDate(order.createdAt)}
+   </p>
+
+
+  </div>
+
+  `).join("");
+
+
+ }catch(error){
+
+  box.innerHTML=
+  "❌ "+error.message;
+
+ }
+
+}
+
+
+/* =========================
+ CHANGE STATUS
+========================= */
+
+async function changeOrderStatus(
+ orderId,
+ status
+){
+
+ if(
+  !currentUser ||
+  currentUser.email.toLowerCase()
+  !==
+  ADMIN_EMAIL.toLowerCase()
+ ){
+
+  alert(
+   "Admin Login required."
+  );
+
+  return;
+
+ }
+
+
+ try{
+
+  await db.collection("orders")
+  .doc(orderId)
+  .update({
+
+   status:status,
+
+   updatedAt:
+   firebase.firestore.FieldValue
+   .serverTimestamp()
+
+  });
+
+
+  alert(
+   "✅ Order Status: "+status
+  );
+
+
+  loadAdminOrders();
+
+
+ }catch(error){
+
+  alert("❌ "+error.message);
+
+ }
+
+}
+
+
+/* =========================
+ HELPERS
+========================= */
+
+function openLogin(){
+
+ closeModal("registerModal");
+
+ document.getElementById(
+  "loginModal"
+ ).style.display="block";
+
+}
+
+
+function openRegister(){
+
+ closeModal("loginModal");
+
+ document.getElementById(
+  "registerModal"
+ ).style.display="block";
+
+}
+
+
+function closeModal(id){
+
+ document.getElementById(id)
+ .style.display="none";
+
+}
+
+
+function statusText(status){
+
+ if(status==="Processing")
+ return "⚙️ Processing";
+
+ if(status==="Shipped")
+ return "🚚 Shipped";
+
+ if(status==="Delivered")
+ return "✅ Delivered";
+
+ if(status==="Cancelled")
+ return "❌ Cancelled";
+
+ return status;
+
+}
+
+
+function formatDate(timestamp){
+
+ if(!timestamp)return "";
+
+ try{
+
+  return new Date(
+   timestamp.seconds*1000
+  ).toLocaleString("en-IN");
+
+ }catch(error){
+
+  return "";
+
+ }
+
+}
+
+
+function escapeHTML(value){
+
+ return String(value)
+
+ .replaceAll("&","&amp;")
+
+ .replaceAll("<","&lt;")
+
+ .replaceAll(">","&gt;")
+
+ .replaceAll('"',"&quot;")
+
+ .replaceAll("'","&#039;");
+
+}
+
+
+/* =========================
+ START
+========================= */
+
+loadProducts();
+
+updateCartCount();
+
+</script>
+
+</body>
+</html>
