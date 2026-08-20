@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#e11d48">
+<title>Aalviro Store</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:#f5f6fa;color:#111827}
+button{border:0;cursor:pointer;font-weight:700}
+header{position:sticky;top:0;z-index:50;background:linear-gradient(135deg,#e11d48,#7c3aed);color:#fff;padding:12px;box-shadow:0 4px 18px #0003}
+.top{max-width:1200px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.logo{font-size:23px;font-weight:900}
+.nav{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.nav button{background:#fff;color:#111827;padding:9px 12px;border-radius:11px}
+.container{max-width:1200px;margin:auto;padding:18px}
+.hero{background:linear-gradient(135deg,#111827,#312e81);color:#fff;padding:30px 24px;border-radius:24px;margin-bottom:22px}
+.hero h1{font-size:32px;margin-bottom:8px}
+.hero p{margin-top:7px;opacity:.9}
+.search{width:100%;padding:15px;border:0;border-radius:14px;font-size:16px;margin-bottom:15px;box-shadow:0 2px 10px #0001}
+.categories{display:flex;gap:9px;overflow:auto;margin-bottom:22px}
+.categories button{white-space:nowrap;background:#fff;padding:11px 16px;border-radius:20px}
+.categories button.active{background:#e11d48;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:17px}
+.card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 18px #0001}
+.product-image{width:100%;height:215px;object-fit:cover;background:#eee;display:block}
+.card-body{padding:15px}
+.card-body h3{margin-bottom:7px}
+.description{color:#6b7280;font-size:14px;min-height:35px;margin-bottom:8px}
+.price{font-size:22px;font-weight:900;color:#e11d48}
+.old{font-size:13px;color:#888;text-decoration:line-through;margin-left:5px}
+.stock{margin-top:8px;font-size:13px;font-weight:bold}
+.add-btn{width:100%;background:#111827;color:#fff;padding:13px;border-radius:12px;margin-top:11px}
+.add-btn:disabled{opacity:.5}
+.overlay{display:none;position:fixed;inset:0;z-index:100;background:#0009;overflow:auto;padding:12px}
+.modal{width:100%;max-width:720px;margin:15px auto;background:#fff;border-radius:24px;padding:21px;position:relative;max-height:95vh;overflow:auto}
+.modal.large{max-width:1100px}
+.close{position:absolute;right:12px;top:12px;width:39px;height:39px;border-radius:50%;background:#eee;font-size:20px}
+input,textarea,select{width:100%;padding:13px;border:1px solid #d1d5db;border-radius:11px;font-size:16px;margin:6px 0 12px}
+textarea{min-height:90px;resize:vertical}
+label{font-size:14px;font-weight:700}
+.primary,.success,.danger,.warning,.purple{padding:12px 15px;border-radius:11px}
+.primary{width:100%;background:#111827;color:#fff}
+.success{background:#16a34a;color:#fff}
+.danger{background:#dc2626;color:#fff}
+.warning{background:#f59e0b;color:#fff}
+.purple{background:#7c3aed;color:#fff}
+.full{width:100%}
+.empty{text-align:center;padding:32px;color:#6b7280}
+.order{background:#f8fafc;border:1px solid #e5e7eb;border-radius:17px;padding:15px;margin:12px 0}
+.new-order{border:3px solid #ef4444;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 9px #ef444422}}
+.order-head{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.badge{display:inline-block;padding:6px 10px;border-radius:20px;background:#fef3c7;color:#92400e;font-size:12px;font-weight:bold}
+.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #e5e7eb}
+.item img{width:58px;height:58px;object-fit:cover;border-radius:9px;background:#eee}
+.item-info{flex:1}
+.total{font-size:20px;font-weight:900;background:#f1f5f9;padding:14px;border-radius:12px;margin-top:12px}
+.admin-tabs{display:flex;gap:7px;overflow:auto;margin:15px 0}
+.admin-tabs button{background:#e5e7eb;padding:10px 14px;border-radius:11px;white-space:nowrap}
+.admin-tabs button.active{background:#111827;color:#fff}
+.dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:15px 0}
+.stat{background:#fff;border:1px solid #e5e7eb;border-radius:15px;padding:15px}
+.stat .number{font-size:24px;font-weight:900;margin-top:6px}
+.stat small{color:#6b7280}
+.admin-product{display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid #e5e7eb;padding:10px;border-radius:14px;margin:8px 0}
+.admin-product img{width:65px;height:65px;object-fit:cover;border-radius:9px}
+.admin-product-info{flex:1}
+.ring{display:none;background:#dc2626;color:#fff;padding:14px;border-radius:13px;text-align:center;font-weight:900;margin-bottom:13px}
+.mapbox{background:#eef2ff;padding:12px;border-radius:12px;margin-top:10px}
+.small{font-size:13px;color:#6b7280}
+footer{background:#111827;color:#fff;text-align:center;padding:28px;margin-top:35px}
+@media(max-width:650px){.logo{font-size:18px}.nav button{font-size:11px;padding:8px}.hero h1{font-size:27px}}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="top">
+<div class="logo">🛍️ Aalviro Store</div>
+<div class="nav">
+<button onclick="openOrders()">📦 Orders</button>
+<button onclick="openCart()">🛒 <span id="cartCount">0</span></button>
+<button id="loginBtn" onclick="openLogin()">🔐 Login</button>
+<button id="logoutBtn" style="display:none" onclick="logout()">🚪 Logout</button>
+<button onclick="openAdmin()">⚙️ Admin</button>
+</div>
+</div>
+</header>
+
+<main class="container">
+
+<section class="hero">
+<h1>🛍️ Aalviro Store</h1>
+<p>आपका भरोसेमंद Online Store</p>
+<p>🚚 Fast Delivery • 💵 Cash on Delivery • ⚡ Easy Order</p>
+</section>
+
+<input id="search" class="search"
+placeholder="🔎 सामान खोजें..."
+oninput="renderProducts()">
+
+<div class="categories">
+<button class="active" onclick="setCategory('All',this)">All</button>
+<button onclick="setCategory('Grocery',this)">Grocery</button>
+<button onclick="setCategory('Fashion',this)">Fashion</button>
+<button onclick="setCategory('Electronics',this)">Electronics</button>
+<button onclick="setCategory('Home',this)">Home</button>
+<button onclick="setCategory('Other',this)">Other</button>
+</div>
+
+<h2 style="margin-bottom:15px">🔥 Products</h2>
+<div id="products" class="grid"></div>
+
+</main>
+
+<footer>
+<h2>Aalviro Store</h2>
+<p style="margin-top:7px">आपका भरोसेमंद Online Store</p>
+<p class="small" style="margin-top:12px;color:#bbb">© 2026 Aalviro Store</p>
+</footer>
+
+
+<!-- LOGIN -->
+<div id="loginModal" class="overlay">
+<div class="modal">
+<button class="close" onclick="closeModal('loginModal')">×</button>
+<h2>🔐 Customer Login</h2>
+
+<label>Email</label>
+<input id="loginEmail" type="email" placeholder="Email">
+
+<label>Password</label>
+<input id="loginPassword" type="password" placeholder="Password">
+
+<button class="primary" onclick="customerLogin()">🔐 Login</button>
+
+<p id="loginMsg" class="small" style="margin-top:10px"></p>
+
+<hr>
+
+<button class="success full" onclick="openRegister()">👤 Create Account</button>
+</div>
+</div>
+
+
+<!-- REGISTER -->
+<div id="registerModal" class="overlay">
+<div class="modal">
+<button class="close" onclick="closeModal('registerModal')">×</button>
+<h2>👤 Customer Register</h2>
+
+<label>Name</label>
+<input id="regName" placeholder="पूरा नाम">
+
+<label>Mobile</label>
+<input id="regPhone" placeholder="10 अंकों का मोबाइल">
+
+<label>Email</label>
+<input id="regEmail" type="email" placeholder="Email">
+
+<label>Password</label>
+<input id="regPassword" type="password" placeholder="कम से कम 6 characters">
+
+<button class="success full" onclick="registerCustomer()">✅ Register</button>
+
+<p id="regMsg" class="small" style="margin-top:10px"></p>
+</div>
+</div>
+
+
+<!-- CART -->
+<div id="cartModal" class="overlay">
+<div class="modal">
+<button class="close" onclick="closeModal('cartModal')">×</button>
+<h2>🛒 आपका Cart</h2>
+
+<div id="cartItems"></div>
+
+<div id="cartTotal" class="total">Total: ₹0</div>
+
+<button class="success full" style="margin-top:10px" onclick="checkout()">📦 Place Order</button>
+</div>
+</div>
+
+
+<!-- CHECKOUT -->
+<div id="checkoutModal" class="overlay">
+<div class="modal">
+<button class="close" onclick="closeModal('checkoutModal')">×</button>
+<h2>📦 Delivery Details</h2>
+
+<label>Name</label>
+<input id="orderName">
+
+<label>Mobile</label>
+<input id="orderPhone">
+
+<label>Address</label>
+<textarea id="orderAddress" placeholder="पूरा Delivery Address"></textarea>
+
+<button class="purple full" onclick="getCustomerLocation()">
+📍 मेरी Delivery Location चुनें
+</button>
+
+<div id="locationMsg" class="small" style="margin:9px 0"></div>
+
+<input id="latitude" type="hidden">
+<input id="longitude" type="hidden">
+
+<label>Payment</label>
+<select id="payment">
+<option value="Cash on Delivery">💵 Cash on Delivery</option>
+<option value="Online Payment">💳 Online Payment</option>
+</select>
+
+<p class="small">
+Online Payment चुनने पर अभी Order में payment mode save होगा।
+Actual automatic payment लेने के लिए Razorpay/UPI gateway अलग से connect करना होगा।
+</p>
+
+<div id="checkoutTotal" class="total">Total: ₹0</div>
+
+<button class="success full" onclick="placeOrder()">✅ Confirm Order</button>
+
+<p id="checkoutMsg" class="small" style="margin-top:10px"></p>
+</div>
+</div>
+
+
+<!-- CUSTOMER ORDERS -->
+<div id="ordersModal" class="overlay">
+<div class="modal large">
+<button class="close" onclick="closeModal('ordersModal')">×</button>
+<h2>📦 My Orders</h2>
+<div id="myOrders" style="margin-top:15px"></div>
+</div>
+</div>
+
+
+<!-- ADMIN LOGIN -->
+<div id="adminLoginModal" class="overlay">
+<div class="modal">
+<button class="close" onclick="closeModal('adminLoginModal')">×</button>
+<h2>⚙️ Admin Login</h2>
+
+<label>Email</label>
+<input id="adminEmail" type="email" value="aalamarshlan05@gmail.com">
+
+<label>Password</label>
+<input id="adminPassword" type="password" placeholder="Firebase password">
+
+<button class="success full" onclick="adminLogin()">🔐 Admin Login</button>
+
+<p id="adminLoginMsg" class="small" style="margin-top:10px"></p>
+</div>
+</div>
+
+
+<!-- ADMIN -->
+<div id="adminModal" class="overlay">
+<div class="modal large">
+<button class="close" onclick="closeModal('adminModal')">×</button>
+
+<h2>⚙️ Aalviro Admin Dashboard</h2>
+
+<div id="ringBox" class="ring">
+🚨 नया ORDER आया है — ACCEPT ORDER करें 🚨
+<br>
+<button class="success" style="margin-top:8px" onclick="stopAlarm()">🔕 Ring बंद करें</button>
+</div>
+
+
+<!-- DASHBOARD -->
+<div class="dashboard">
+
+<div class="stat">
+<small>💰 Earnings</small>
+<div id="statEarnings" class="number">₹0</div>
+</div>
+
+<div class="stat">
+<small>📦 Total Orders</small>
+<div id="statOrders" class="number">0</div>
+</div>
+
+<div class="stat">
+<small>🆕 New</small>
+<div id="statNew" class="number">0</div>
+</div>
+
+<div class="stat">
+<small>⚙️ Processing</small>
+<div id="statProcessing" class="number">0</div>
+</div>
+
+<div class="stat">
+<small>🚚 Shipped</small>
+<div id="statShipped" class="number">0</div>
+</div>
+
+<div class="stat">
+<small>📦 Delivered</small>
+<div id="statDelivered" class="number">0</div>
+</div>
+
+<div class="stat">
+<small>❌ Cancelled</small>
+<div id="statCancelled" class="number">0</div>
+</div>
+
+<div class="stat">
+<small>📅 Today Earnings</small>
+<div id="statToday" class="number">₹0</div>
+</div>
+
+</div>
+
+
+<div class="admin-tabs">
+<button class="active" onclick="adminTab('dashboard',this)">📊 Dashboard</button>
+<button onclick="adminTab('products',this)">🛍️ Products</button>
+<button onclick="adminTab('orders',this)">📦 Orders</button>
+<button onclick="adminTab('rider',this)">🚚 Rider</button>
+</div>
+
+
+<!-- DASHBOARD TAB -->
+<div id="dashboardTab">
+
+<h3>📊 Store Summary</h3>
+
+<p class="small" style="margin-top:8px">
+Earnings में सिर्फ Delivered orders की amount गिनी जा रही है।
+</p>
+
+<div id="dashboardOrders" style="margin-top:12px"></div>
+
+</div>
+
+
+<!-- PRODUCTS TAB -->
+<div id="productsTab" style="display:none">
+
+<h3>➕ Product Add करें</h3>
+
+<label>Product Name</label>
+<input id="productName" placeholder="Product Name">
+
+<label>Description</label>
+<textarea id="productDescription" placeholder="Product की जानकारी"></textarea>
+
+<label>Price</label>
+<input id="productPrice" type="number" placeholder="299">
+
+<label>Old Price</label>
+<input id="productOldPrice" type="number" placeholder="599">
+
+<label>Stock</label>
+<input id="productStock" type="number" placeholder="10">
+
+<label>Category</label>
+<select id="productCategory">
+<option>Grocery</option>
+<option>Fashion</option>
+<option>Electronics</option>
+<option>Home</option>
+<option>Other</option>
+</select>
+
+<label>Gallery से Photo</label>
+<input id="productPhoto" type="file" accept="image/*">
+
+<button class="success full" onclick="addProduct()">➕ Product Add करें</button>
+
+<p id="productMsg" class="small" style="margin-top:8px"></p>
+
+<hr>
+
+<h3>📦 Products</h3>
+<div id="adminProducts"></div>
+
+</div>
+
+
+<!-- ORDERS TAB -->
+<div id="ordersTab" style="display:none">
+
+<h3>📦 सभी Orders</h3>
+<div id="adminOrders"></div>
+
+</div>
+
+
+<!-- RIDER TAB -->
+<div id="riderTab" style="display:none">
+
+<h3>🚚 Rider Delivery Panel</h3>
+
+<p class="small" style="margin:8px 0 15px">
+Customer द्वारा चुनी गई delivery location यहाँ दिखाई जाएगी।
+</p>
+
+<div id="riderOrders"></div>
+
+</div>
+
+</div>
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+
+<script>
+
+/* =====================================================
+   FIREBASE CONFIG
+===================================================== */
+
+const firebaseConfig={
+apiKey:"AIzaSyDMmg81OOUPv0_-ZkZeNZazPodV7GDn7ew",
+authDomain:"aalviro-store-5bc7a.firebaseapp.com",
+projectId:"aalviro-store-5bc7a",
+storageBucket:"aalviro-store-5bc7a.firebasestorage.app",
+messagingSenderId:"739678310618",
+appId:"1:739678310618:web:edcc916e13324771d315e3",
+measurementId:"G-N8T1TYG5TD"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+const ADMIN_EMAIL="aalamarshlan05@gmail.com";
+
+let currentUser=null;
+let products=[];
+let cart=JSON.parse(localStorage.getItem("aalviroCart")||"[]");
+let category="All";
+let alarmTimer=null;
+let alarmActive=false;
+let adminListener=null;
+let customerListener=null;
+let knownOrderIds=new Set();
+let firstAdminSnapshot=true;
+
+
+/* =====================================================
+   AUTH
+===================================================== */
+
+auth.onAuthStateChanged(user=>{
+
+currentUser=user;
+
+if(user){
+
+document.getElementById("loginBtn").style.display="none";
+document.getElementById("logoutBtn").style.display="block";
+
+}else{
+
+document.getElementById("loginBtn").style.display="block";
+document.getElementById("logoutBtn").style.display="none";
+
+}
+
+updateCartCount();
+
+});
+
+
+/* =====================================================
+   CUSTOMER REGISTER
+===================================================== */
+
+async function registerCustomer(){
+
+const name=val("regName");
+const phone=val("regPhone");
+const email=val("regEmail");
+const password=document.getElementById("regPassword").value;
+
+if(!name||!phone||!email||password.length<6){
+
+msg("regMsg","❌ सभी जानकारी सही भरें।");
+return;
+
+}
+
+try{
+
+const result=await auth.createUserWithEmailAndPassword(email,password);
+
+await db.collection("customers").doc(result.user.uid).set({
+uid:result.user.uid,
+name:name,
+phone:phone,
+email:email,
+createdAt:firebase.firestore.FieldValue.serverTimestamp()
+});
+
+msg("regMsg","✅ Account बन गया।");
+
+setTimeout(()=>closeModal("registerModal"),700);
+
+}catch(e){
+
+msg("regMsg","❌ "+errorText(e));
+
+}
+
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+async function customerLogin(){
+
+const email=val("loginEmail");
+const password=document.getElementById("loginPassword").value;
+
+if(!email||!password){
+
+msg("loginMsg","❌ Email और Password डालें।");
+return;
+
+}
+
+try{
+
+await auth.signInWithEmailAndPassword(email,password);
+
+msg("loginMsg","✅ Login सफल।");
+
+setTimeout(()=>closeModal("loginModal"),600);
+
+}catch(e){
+
+msg("loginMsg","❌ "+errorText(e));
+
+}
+
+}
+
+
+/* =====================================================
+   ADMIN LOGIN
+===================================================== */
+
+async function adminLogin(){
+
+const email=val("adminEmail");
+const password=document.getElementById("adminPassword").value;
+
+if(email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()){
+
+msg("adminLoginMsg","❌ Admin Email गलत है।");
+return;
+
+}
+
+if(!password){
+
+msg("adminLoginMsg","❌ Password डालें।");
+return;
+
+}
+
+try{
+
+await auth.signInWithEmailAndPassword(email,password);
+
+closeModal("adminLoginModal");
+openAdminPanel();
+
+requestNotification();
+
+startAdminListener();
+
+}catch(e){
+
+msg("adminLoginMsg","❌ "+errorText(e));
+
+}
+
+}
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+async function logout(){
+
+stopAdminListener();
+stopAlarm();
+
+await auth.signOut();
+
+alert("✅ Logout हो गया।");
+
+}
+
+
+/* =====================================================
+   PRODUCTS
+===================================================== */
+
+async function loadProducts(){
+
+try{
+
+const snap=await db.collection("products").get();
+
+products=[];
+
+snap.forEach(doc=>{
+products.push({id:doc.id,...doc.data()});
+});
+
+renderProducts();
+
+}catch(e){
+
+document.getElementById("products").innerHTML=
+"<div class='empty'>❌ Products load नहीं हुए। Firebase Rules check करें।</div>";
+
+}
+
+}
+
+
+function renderProducts(){
+
+const box=document.getElementById("products");
+
+const search=val("search").toLowerCase();
+
+const list=products.filter(p=>{
+
+const catOk=category==="All"||p.category===category;
+
+const searchOk=(p.name||"").toLowerCase().includes(search);
+
+return catOk&&searchOk;
+
+});
+
+if(!list.length){
+
+box.innerHTML="<div class='empty'>📦 कोई Product नहीं मिला।</div>";
+return;
+
+}
+
+box.innerHTML=list.map(p=>{
+
+const stock=Number(p.stock||0);
+
+return `
+
+<div class="card">
+
+<img class="product-image"
+src="${p.image||""}"
+alt="Product">
+
+<div class="card-body">
+
+<h3>${safe(p.name)}</h3>
+
+<div class="description">${safe(p.description||"")}</div>
+
+<span class="price">₹${Number(p.price||0)}</span>
+
+${p.oldPrice?`<span class="old">₹${Number(p.oldPrice)}</span>`:""}
+
+<div class="stock">
+${stock>0?"✅ Stock: "+stock:"❌ Out of Stock"}
+</div>
+
+<button
+class="add-btn"
+${stock<=0?"disabled":""}
+onclick="addToCart('${p.id}')">
+
+🛒 Cart में डालें
+
+</button>
+
+</div>
+</div>
+
+`;
+
+}).join("");
+
+}
+
+
+function setCategory(cat,button){
+
+category=cat;
+
+document.querySelectorAll(".categories button")
+.forEach(b=>b.classList.remove("active"));
+
+button.classList.add("active");
+
+renderProducts();
+
+}
+
+
+/* =====================================================
+   CART
+===================================================== */
+
+function saveCart(){
+
+localStorage.setItem("aalviroCart",JSON.stringify(cart));
+updateCartCount();
+
+}
+
+
+function updateCartCount(){
+
+document.getElementById("cartCount").innerText=
+cart.reduce((a,b)=>a+Number(b.qty),0);
+
+}
+
+
+function addToCart(id){
+
+const p=products.find(x=>x.id===id);
+
+if(!p)return;
+
+const stock=Number(p.stock||0);
+
+const old=cart.find(x=>x.id===id);
+
+if(old){
+
+if(old.qty>=stock){
+
+alert("❌ Stock उपलब्ध नहीं है।");
+return;
+
+}
+
+old.qty++;
+
+}else{
+
+cart.push({
+id:p.id,
+name:p.name,
+price:Number(p.price),
+image:p.image||"",
+qty:1
+});
+
+}
+
+saveCart();
+alert("✅ Cart में add हो गया।");
+
+}
+
+
+function openCart(){
+
+document.getElementById("cartModal").style.display="block";
+renderCart();
+
+}
+
+
+function renderCart(){
+
+const box=document.getElementById("cartItems");
+
+if(!cart.length){
+
+box.innerHTML="<div class='empty'>🛒 Cart खाली है।</div>";
+document.getElementById("cartTotal").innerText="Total: ₹0";
+return;
+
+}
+
+let total=0;
+
+box.innerHTML=cart.map((x,i)=>{
+
+total+=x.price*x.qty;
+
+return `
+
+<div class="item">
+
+<img src="${x.image||""}">
+
+<div class="item-info">
+
+<b>${safe(x.name)}</b><br>
+₹${x.price} × ${x.qty}
+
+<div style="margin-top:7px">
+
+<button class="warning"
+onclick="changeQty(${i},-1)">−</button>
+
+<span style="padding:0 10px">${x.qty}</span>
+
+<button class="success"
+onclick="changeQty(${i},1)">+</button>
+
+</div>
+
+</div>
+
+<button class="danger"
+onclick="removeCart(${i})">🗑️</button>
+
+</div>
+
+`;
+
+}).join("");
+
+document.getElementById("cartTotal").innerText="Total: ₹"+total;
+
+}
+
+
+function changeQty(i,n){
+
+const item=cart[i];
+
+if(!item)return;
+
+if(n>0){
+
+const p=products.find(x=>x.id===item.id);
+
+if(p&&item.qty>=Number(p.stock||0)){
+
+alert("❌ Stock खत्म है.");
+return;
+
+}
+
+}
+
+item.qty+=n;
+
+if(item.qty<=0)cart.splice(i,1);
+
+saveCart();
+renderCart();
+
+}
+
+
+function removeCart(i){
+
+cart.splice(i,1);
+saveCart();
+renderCart();
+
+}
+
+
+/* =====================================================
+   CHECKOUT + CUSTOMER LOCATION
+===================================================== */
+
+async function checkout(){
+
+if(!currentUser){
+
+closeModal("cartModal");
+openLogin();
+
+alert("पहले Customer Login करें।");
+return;
+
+}
+
+const customer=await db.collection("customers")
+.doc(currentUser.uid).get();
+
+if(customer.exists){
+
+const d=customer.data();
+
+document.getElementById("orderName").value=d.name||"";
+document.getElementById("orderPhone").value=d.phone||"";
+
+}
+
+let total=cart.reduce((a,b)=>a+b.price*b.qty,0);
+
+document.getElementById("checkoutTotal").innerText="Total: ₹"+total;
+
+closeModal("cartModal");
+
+document.getElementById("checkoutModal").style.display="block";
+
+}
+
+
+function getCustomerLocation(){
+
+const msg=document.getElementById("locationMsg");
+
+if(!navigator.geolocation){
+
+msg.innerText="❌ इस फोन में Location उपलब्ध नहीं है।";
+return;
+
+}
+
+msg.innerText="📍 Location प्राप्त हो रही है...";
+
+navigator.geolocation.getCurrentPosition(
+
+position=>{
+
+const lat=position.coords.latitude;
+const lng=position.coords.longitude;
+
+document.getElementById("latitude").value=lat;
+document.getElementById("longitude").value=lng;
+
+msg.innerHTML=
+`✅ Location मिल गई।<br>
+<a target="_blank"
+href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}">
+🗺️ Map पर देखें
+</a>`;
+
+},
+
+error=>{
+
+msg.innerText=
+"❌ Location permission दें और फिर कोशिश करें।";
+
+},
+
+{
+enableHighAccuracy:true,
+timeout:15000,
+maximumAge:0
+}
+
+);
+
+}
+
+
+/* =====================================================
+   PLACE ORDER
+===================================================== */
+
+async function placeOrder(){
+
+if(!currentUser){
+
+alert("Login required.");
+return;
+
+}
+
+const name=val("orderName");
+const phone=val("orderPhone");
+const address=val("orderAddress");
+const payment=val("payment");
+const lat=val("latitude");
+const lng=val("longitude");
+
+if(!name){
+
+msg("checkoutMsg","❌ Name डालें.");
+return;
+
+}
+
+if(!/^[0-9]{10}$/.test(phone)){
+
+msg("checkoutMsg","❌ सही 10 digit mobile डालें.");
+return;
+
+}
+
+if(address.length<10){
+
+msg("checkoutMsg","❌ पूरा Address डालें.");
+return;
+
+}
+
+if(!cart.length){
+
+alert("Cart खाली है.");
+return;
+
+}
+
+try{
+
+let total=0;
+
+const items=cart.map(x=>{
+
+total+=x.price*x.qty;
+
+return {
+productId:x.id,
+name:x.name,
+price:x.price,
+quantity:x.qty,
+image:x.image||""
+};
+
+});
+
+const ref=db.collection("orders").doc();
+
+await ref.set({
+
+orderId:ref.id,
+
+customerId:currentUser.uid,
+
+customerEmail:currentUser.email,
+
+customerName:name,
+
+phone:phone,
+
+address:address,
+
+latitude:lat?Number(lat):null,
+
+longitude:lng?Number(lng):null,
+
+payment:payment,
+
+paymentStatus:
+payment==="Cash on Delivery"?"Pending":"Pending",
+
+items:items,
+
+total:total,
+
+status:"New",
+
+deliveryAccepted:false,
+
+createdAt:firebase.firestore.FieldValue.serverTimestamp()
+
+});
+
+cart=[];
+saveCart();
+
+closeModal("checkoutModal");
+
+alert(
+"🎉 Order Successfully Placed!\n\n"+
+"Order ID: "+ref.id
+);
+
+openOrders();
+
+}catch(e){
+
+msg("checkoutMsg","❌ "+errorText(e));
+
+}
+
+}
+
+
+/* =====================================================
+   CUSTOMER ORDER HISTORY
+===================================================== */
+
+function openOrders(){
+
+if(!currentUser){
+
+openLogin();
+alert("पहले Login करें.");
+return;
+
+}
+
+document.getElementById("ordersModal").style.display="block";
+
+loadCustomerOrders();
+
+}
+
+
+async function loadCustomerOrders(){
+
+const box=document.getElementById("myOrders");
+
+box.innerHTML="<div class='empty'>⏳ Loading...</div>";
+
+try{
+
+const snap=await db.collection("orders")
+.where("customerId","==",currentUser.uid)
+.get();
+
+let arr=[];
+
+snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+
+arr.sort((a,b)=>
+(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)
+);
+
+if(!arr.length){
+
+box.innerHTML="<div class='empty'>📦 कोई Order नहीं है।</div>";
+return;
+
+}
+
+box.innerHTML=arr.map(customerOrder).join("");
+
+}catch(e){
+
+box.innerHTML="<div class='empty'>❌ Orders load नहीं हुए.</div>";
+
+}
+
+}
+
+
+function customerOrder(o){
+
+const items=(o.items||[]).map(x=>`
+
+<div class="item">
+
+<img src="${x.image||""}">
+
+<div class="item-info">
+<b>${safe(x.name)}</b><br>
+₹${x.price} × ${x.quantity}
+</div>
+
+</div>
+
+`).join("");
+
+return `
+
+<div class="order">
+
+<div class="order-head">
+
+<h3>📦 #${o.id.slice(0,10)}</h3>
+
+<span class="badge">${statusText(o.status)}</span>
+
+</div>
+
+<p style="margin-top:10px">
+📍 ${safe(o.address||"")}
+</p>
+
+${o.latitude&&o.longitude?`
+
+<div class="mapbox">
+
+📍 Delivery Location Saved
+
+<br><br>
+
+<a target="_blank"
+href="https://www.google.com/maps/search/?api=1&query=${o.latitude},${o.longitude}">
+🗺️ Google Maps पर देखें
+</a>
+
+</div>
+
+`:""}
+
+<hr>
+
+${items}
+
+<div class="total">
+💰 ₹${Number(o.total||0)}
+</div>
+
+${
+o.status==="Delivered"&&!o.deliveryAccepted
+?
+`
+<button class="success full"
+style="margin-top:10px"
+onclick="acceptDelivery('${o.id}')">
+
+✅ Accept Delivery
+
+</button>
+`
+:""
+}
+
+${
+o.deliveryAccepted
+?
+`<p style="color:#16a34a;font-weight:bold;margin-top:10px">
+✅ Delivery Accepted
+</p>`
+:""
+}
+
+<p class="small" style="margin-top:10px">
+${formatDate(o.createdAt)}
+</p>
+
+</div>
+
+`;
+
+}
+
+
+/* =====================================================
+   CUSTOMER ACCEPT DELIVERY
+===================================================== */
+
+async function acceptDelivery(id){
+
+try{
+
+const ref=db.collection("orders").doc(id);
+
+const snap=await ref.get();
+
+if(!snap.exists)return;
+
+const o=snap.data();
+
+if(o.customerId!==currentUser.uid){
+
+alert("Unauthorized");
+return;
+
+}
+
+if(o.status!=="Delivered"){
+
+alert("Order अभी Delivered नहीं है.");
+return;
+
+}
+
+await ref.update({
+
+deliveryAccepted:true,
+
+deliveryAcceptedAt:
+firebase.firestore.FieldValue.serverTimestamp()
+
+});
+
+alert("✅ Delivery Accept हो गई.");
+
+loadCustomerOrders();
+
+}catch(e){
+
+alert("❌ "+errorText(e));
+
+}
+
+}
+
+
+/* =====================================================
+   ADMIN
+===================================================== */
+
+function openAdmin(){
+
+if(isAdmin()){
+
+openAdminPanel();
+
+}else{
+
+document.getElementById("adminLoginModal")
+.style.display="block";
+
+}
+
+}
+
+
+function openAdminPanel(){
+
+document.getElementById("adminModal")
+.style.display="block";
+
+startAdminListener();
+
+loadAdminData();
+
+}
+
+
+function adminTab(tab,button){
+
+document.querySelectorAll(".admin-tabs button")
+.forEach(x=>x.classList.remove("active"));
+
+button.classList.add("active");
+
+document.getElementById("dashboardTab").style.display="none";
+document.getElementById("productsTab").style.display="none";
+document.getElementById("ordersTab").style.display="none";
+document.getElementById("riderTab").style.display="none";
+
+if(tab==="dashboard"){
+document.getElementById("dashboardTab").style.display="block";
+loadAdminData();
+}
+
+if(tab==="products"){
+document.getElementById("productsTab").style.display="block";
+loadAdminProducts();
+}
+
+if(tab==="orders"){
+document.getElementById("ordersTab").style.display="block";
+loadAdminOrders();
+}
+
+if(tab==="rider"){
+document.getElementById("riderTab").style.display="block";
+loadRiderOrders();
+}
+
+}
+
+
+/* =====================================================
+   ADMIN DASHBOARD
+===================================================== */
+
+async function loadAdminData(){
+
+if(!isAdmin())return;
+
+try{
+
+const snap=await db.collection("orders").get();
+
+let totalOrders=0;
+let newOrders=0;
+let processing=0;
+let shipped=0;
+let delivered=0;
+let cancelled=0;
+let earnings=0;
+let today=0;
+
+const start=new Date();
+start.setHours(0,0,0,0);
+
+snap.forEach(doc=>{
+
+const o=doc.data();
+
+totalOrders++;
+
+const status=o.status||"New";
+
+if(status==="New")newOrders++;
+if(status==="Processing")processing++;
+if(status==="Shipped")shipped++;
+if(status==="Delivered")delivered++;
+if(status==="Cancelled")cancelled++;
+
+if(status==="Delivered"){
+
+earnings+=Number(o.total||0);
+
+if(o.createdAt){
+
+const date=new Date(o.createdAt.seconds*1000);
+
+if(date>=start){
+
+today+=Number(o.total||0);
+
+}
+
+}
+
+}
+
+});
+
+document.getElementById("statEarnings").innerText="₹"+earnings;
+document.getElementById("statOrders").innerText=totalOrders;
+document.getElementById("statNew").innerText=newOrders;
+document.getElementById("statProcessing").innerText=processing;
+document.getElementById("statShipped").innerText=shipped;
+document.getElementById("statDelivered").innerText=delivered;
+document.getElementById("statCancelled").innerText=cancelled;
+document.getElementById("statToday").innerText="₹"+today;
+
+}catch(e){
+
+console.error(e);
+
+}
+
+}
+
+
+/* =====================================================
+   ADMIN PRODUCTS
+===================================================== */
+
+async function addProduct(){
+
+if(!isAdmin()){
+
+alert("Admin Login required.");
+return;
+
+}
+
+const name=val("productName");
+const description=val("productDescription");
+const price=Number(val("productPrice"));
+const oldPrice=Number(val("productOldPrice")||0);
+const stock=Number(val("productStock")||0);
+const category=val("productCategory");
+const file=document.getElementById("productPhoto").files[0];
+
+if(!name||price<=0||stock<0||!file){
+
+msg("productMsg","❌ सभी Product details भरें और Gallery Photo चुनें.");
+return;
+
+}
+
+try{
+
+msg("productMsg","⏳ Photo तैयार हो रही है...");
+
+const image=await compressImage(file);
+
+if(image.length>900000){
+
+throw new Error("Photo बहुत बड़ी है। दूसरी छोटी photo चुनें.");
+
+}
+
+await db.collection("products").add({
+
+name:name,
+description:description,
+price:price,
+oldPrice:oldPrice,
+stock:stock,
+category:category,
+image:image,
+createdBy:currentUser.uid,
+createdAt:firebase.firestore.FieldValue.serverTimestamp()
+
+});
+
+msg("productMsg","✅ Product Add हो गया.");
+
+["productName","productDescription","productPrice","productOldPrice","productStock"]
+.forEach(id=>document.getElementById(id).value="");
+
+document.getElementById("productPhoto").value="";
+
+await loadProducts();
+await loadAdminProducts();
+
+}catch(e){
+
+msg("productMsg","❌ "+errorText(e));
+
+}
+
+}
+
+
+function compressImage(file){
+
+return new Promise((resolve,reject)=>{
+
+const reader=new FileReader();
+
+reader.onload=e=>{
+
+const img=new Image();
+
+img.onload=()=>{
+
+let w=img.width;
+let h=img.height;
+const max=850;
+
+if(w>max){
+h=h*max/w;
+w=max;
+}
+
+if(h>max){
+w=w*max/h;
+h=max;
+}
+
+const canvas=document.createElement("canvas");
+
+canvas.width=w;
+canvas.height=h;
+
+canvas.getContext("2d").drawImage(img,0,0,w,h);
+
+resolve(canvas.toDataURL("image/jpeg",.68));
+
+};
+
+img.onerror=()=>reject(new Error("Photo error"));
+img.src=e.target.result;
+
+};
+
+reader.onerror=()=>reject(new Error("File error"));
+
+reader.readAsDataURL(file);
+
+}
+
+
+async function loadAdminProducts(){
+
+const box=document.getElementById("adminProducts");
+
+try{
+
+const snap=await db.collection("products").get();
+
+if(snap.empty){
+
+box.innerHTML="<div class='empty'>कोई Product नहीं है.</div>";
+return;
+
+}
+
+box.innerHTML="";
+
+snap.forEach(doc=>{
+
+const p=doc.data();
+
+box.innerHTML+=`
+
+<div class="admin-product">
+
+<img src="${p.image||""}">
+
+<div class="admin-product-info">
+
+<b>${safe(p.name)}</b><br>
+₹${p.price}<br>
+Stock: ${p.stock}<br>
+<span class="small">${safe(p.category||"")}</span>
+
+</div>
+
+<button class="danger"
+onclick="deleteProduct('${doc.id}')">
+
+🗑️
+
+</button>
+
+</div>
+
+`;
+
+});
+
+}catch(e){
+
+box.innerHTML="<div class='empty'>❌ "+errorText(e)+"</div>";
+
+}
+
+}
+
+
+async function deleteProduct(id){
+
+if(!isAdmin())return;
+
+if(!confirm("यह Product delete करें?"))return;
+
+try{
+
+await db.collection("products").doc(id).delete();
+
+await loadProducts();
+await loadAdminProducts();
+
+}catch(e){
+
+alert("❌ "+errorText(e));
+
+}
+
+}
+
+
+/* =====================================================
+   ADMIN ORDERS
+===================================================== */
+
+async function loadAdminOrders(){
+
+const box=document.getElementById("adminOrders");
+
+box.innerHTML="<div class='empty'>⏳ Loading...</div>";
+
+try{
+
+const snap=await db.collection("orders").get();
+
+let arr=[];
+
+snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+
+arr.sort((a,b)=>
+(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)
+);
+
+if(!arr.length){
+
+box.innerHTML="<div class='empty'>📦 अभी कोई Order नहीं है.</div>";
+return;
+
+}
+
+box.innerHTML=arr.map(adminOrder).join("");
+
+}catch(e){
+
+box.innerHTML="<div class='empty'>❌ "+errorText(e)+"</div>";
+
+}
+
+}
+
+
+function adminOrder(o){
+
+const items=(o.items||[]).map(x=>`
+
+<div class="item">
+
+<img src="${x.image||""}">
+
+<div class="item-info">
+<b>${safe(x.name)}</b><br>
+₹${x.price} × ${x.quantity}
+</div>
+
+</div>
+
+`).join("");
+
+return `
+
+<div class="order ${o.status==="New"?"new-order":""}">
+
+<div class="order-head">
+
+<h3>📦 #${o.id.slice(0,10)}</h3>
+
+<span class="badge">${statusText(o.status)}</span>
+
+</div>
+
+<p style="margin-top:10px">
+👤 <b>${safe(o.customerName||"")}</b>
+</p>
+
+<p>📞 ${safe(o.phone||"")}</p>
+
+<p>📍 ${safe(o.address||"")}</p>
+
+${o.latitude&&o.longitude?`
+
+<div class="mapbox">
+
+📍 Customer Location
+
+<br><br>
+
+<a target="_blank"
+href="https://www.google.com/maps/dir/?api=1&destination=${o.latitude},${o.longitude}&travelmode=driving">
+
+🗺️ Rider के लिए Google Maps Route
+
+</a>
+
+</div>
+
+`:""}
+
+<hr>
+
+${items}
+
+<div class="total">
+💰 ₹${Number(o.total||0)}
+</div>
+
+${
+o.status==="New"
+?
+`
+<button class="success full"
+style="margin-top:10px"
+onclick="acceptOrder('${o.id}')">
+
+🔔 ACCEPT ORDER
+
+</button>
+`
+:""
+}
+
+<label style="display:block;margin-top:13px">
+Order Status
+</label>
+
+<select onchange="changeStatus('${o.id}',this.value)">
+
+<option ${o.status==="New"?"selected":""}>New</option>
+<option ${o.status==="Accepted"?"selected":""}>Accepted</option>
+<option ${o.status==="Processing"?"selected":""}>Processing</option>
+<option ${o.status==="Shipped"?"selected":""}>Shipped</option>
+<option ${o.status==="Delivered"?"selected":""}>Delivered</option>
+<option ${o.status==="Cancelled"?"selected":""}>Cancelled</option>
+
+</select>
+
+${
+o.deliveryAccepted
+?
+`<p style="color:#16a34a;font-weight:bold">
+✅ Customer ने Delivery Accept कर दी
+</p>`
+:""
+}
+
+<p class="small">${formatDate(o.createdAt)}</p>
+
+</div>
+
+`;
+
+}
+
+
+/* =====================================================
+   ACCEPT ORDER
+===================================================== */
+
+async function acceptOrder(id){
+
+if(!isAdmin())return;
+
+try{
+
+await db.collection("orders")
+.doc(id)
+.update({
+
+status:"Accepted",
+
+acceptedBy:currentUser.email,
+
+acceptedAt:
+firebase.firestore.FieldValue.serverTimestamp()
+
+});
+
+stopAlarm();
+
+alert("✅ Order Accepted.");
+
+loadAdminOrders();
+loadAdminData();
+
+}catch(e){
+
+alert("❌ "+errorText(e));
+
+}
+
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+async function changeStatus(id,status){
+
+if(!isAdmin())return;
+
+try{
+
+await db.collection("orders")
+.doc(id)
+.update({
+
+status:status,
+
+updatedAt:
+firebase.firestore.FieldValue.serverTimestamp()
+
+});
+
+loadAdminOrders();
+loadAdminData();
+loadRiderOrders();
+
+}catch(e){
+
+alert("❌ "+errorText(e));
+
+}
+
+}
+
+
+/* =====================================================
+   RIDER ORDERS
+===================================================== */
+
+async function loadRiderOrders(){
+
+const box=document.getElementById("riderOrders");
+
+box.innerHTML="<div class='empty'>⏳ Loading...</div>";
+
+try{
+
+const snap=await db.collection("orders").get();
+
+let arr=[];
+
+snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+
+arr=arr.filter(o=>
+o.status!=="Cancelled" &&
+o.status!=="Delivered"
+);
+
+if(!arr.length){
+
+box.innerHTML=
+"<div class='empty'>🚚 अभी कोई active delivery नहीं है.</div>";
+return;
+
+}
+
+box.innerHTML=arr.map(o=>{
+
+const map=
+o.latitude&&o.longitude
+?
+`
+<div class="mapbox">
+
+📍 Customer Location Available
+
+<br><br>
+
+<a target="_blank"
+href="https://www.google.com/maps/dir/?api=1&destination=${o.latitude},${o.longitude}&travelmode=driving">
+
+🗺️ GOOGLE MAPS — पूरा रास्ता देखें
+
+</a>
+
+</div>
+`
+:
+`
+<div class="mapbox">
+⚠️ Customer ने Location नहीं दी है।
+</div>
+`;
+
+return `
+
+<div class="order">
+
+<div class="order-head">
+
+<h3>🚚 #${o.id.slice(0,10)}</h3>
+
+<span class="badge">${statusText(o.status)}</span>
+
+</div>
+
+<p style="margin-top:10px">
+👤 ${safe(o.customerName||"")}
+</p>
+
+<p>📞 ${safe(o.phone||"")}</p>
+
+<p>📍 ${safe(o.address||"")}</p>
+
+${map}
+
+<div class="total">
+💰 ₹${o.total||0}
+</div>
+
+</div>
+
+`;
+
+}).join("");
+
+}catch(e){
+
+box.innerHTML="<div class='empty'>❌ "+errorText(e)+"</div>";
+
+}
+
+}
+
+
+/* =====================================================
+   NEW ORDER LISTENER + RING
+===================================================== */
+
+function startAdminListener(){
+
+if(!isAdmin())return;
+
+if(adminListener){
+adminListener();
+adminListener=null;
+}
+
+knownOrderIds.clear();
+firstAdminSnapshot=true;
+
+adminListener=db.collection("orders")
+.onSnapshot(snapshot=>{
+
+let newOrder=false;
+
+snapshot.docChanges().forEach(change=>{
+
+if(change.type==="added"){
+
+const id=change.doc.id;
+const data=change.doc.data();
+
+if(!knownOrderIds.has(id)){
+
+knownOrderIds.add(id);
+
+if(!firstAdminSnapshot && data.status==="New"){
+
+newOrder=true;
+
+}
+
+}
+
+}
+
+});
+
+firstAdminSnapshot=false;
+
+if(newOrder){
+
+startAlarm();
+
+requestNotification();
+
+if(document.getElementById("adminModal").style.display!=="block"){
+openAdminPanel();
+}
+
+alert("🚨 नया ORDER आया है!\n\nORDER ACCEPT करें.");
+
+}
+
+if(document.getElementById("adminModal").style.display==="block"){
+
+loadAdminData();
+
+}
+
+});
+
+}
+
+
+function stopAdminListener(){
+
+if(adminListener){
+adminListener();
+adminListener=null;
+}
+
+knownOrderIds.clear();
+firstAdminSnapshot=true;
+
+}
+
+
+/* =====================================================
+   ALARM
+===================================================== */
+
+function startAlarm(){
+
+if(alarmActive)return;
+
+alarmActive=true;
+
+document.getElementById("ringBox").style.display="block";
+
+beep();
+
+alarmTimer=setInterval(()=>{
+
+if(alarmActive)beep();
+
+},1500);
+
+}
+
+
+function stopAlarm(){
+
+alarmActive=false;
+
+if(alarmTimer){
+
+clearInterval(alarmTimer);
+alarmTimer=null;
+
+}
+
+document.getElementById("ringBox").style.display="none";
+
+}
+
+
+function beep(){
+
+try{
+
+const C=window.AudioContext||window.webkitAudioContext;
+
+if(!C)return;
+
+if(!window.aalAudio)
+window.aalAudio=new C();
+
+const ctx=window.aalAudio;
+
+if(ctx.state==="suspended")ctx.resume();
+
+const o=ctx.createOscillator();
+const g=ctx.createGain();
+
+o.type="square";
+o.frequency.value=900;
+
+g.gain.setValueAtTime(.001,ctx.currentTime);
+g.gain.exponentialRampToValueAtTime(.25,ctx.currentTime+.03);
+g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.35);
+
+o.connect(g);
+g.connect(ctx.destination);
+
+o.start();
+o.stop(ctx.currentTime+.4);
+
+}catch(e){}
+
+}
+
+
+/* =====================================================
+   NOTIFICATION
+===================================================== */
+
+async function requestNotification(){
+
+try{
+
+if(
+"Notification" in window &&
+Notification.permission==="default"
+){
+
+await Notification.requestPermission();
+
+}
+
+}catch(e){}
+
+}
+
+
+/* =====================================================
+   MODALS
+===================================================== */
+
+function openLogin(){
+
+closeModal("registerModal");
+document.getElementById("loginModal").style.display="block";
+
+}
+
+function openRegister(){
+
+closeModal("loginModal");
+document.getElementById("registerModal").style.display="block";
+
+}
+
+function closeModal(id){
+
+document.getElementById(id).style.display="none";
+
+}
+
+
+/* =====================================================
+   HELPERS
+===================================================== */
+
+function isAdmin(){
+
+return !!(
+currentUser &&
+currentUser.email &&
+currentUser.email.toLowerCase()===ADMIN_EMAIL.toLowerCase()
+);
+
+}
+
+function val(id){
+
+return document.getElementById(id).value.trim();
+
+}
+
+function msg(id,text){
+
+document.getElementById(id).innerText=text;
+
+}
+
+function safe(v){
+
+return String(v??"")
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+
+}
+
+function statusText(s){
+
+const x={
+New:"🆕 New",
+Accepted:"✅ Accepted",
+Processing:"⚙️ Processing",
+Shipped:"🚚 Shipped",
+Delivered:"📦 Delivered",
+Cancelled:"❌ Cancelled"
+};
+
+return x[s]||s||"Unknown";
+
+}
+
+function formatDate(t){
+
+if(!t)return"अभी";
+
+try{
+
+return new Date(t.seconds*1000)
+.toLocaleString("hi-IN");
+
+}catch(e){
+
+return"";
+
+}
+
+}
+
+function errorText(e){
+
+if(e?.code==="auth/invalid-credential"||
+e?.code==="auth/wrong-password"||
+e?.code==="auth/user-not-found")
+return"Email या Password गलत है।";
+
+if(e?.code==="auth/email-already-in-use")
+return"यह Email पहले से registered है।";
+
+if(e?.code==="auth/weak-password")
+return"Password कम से कम 6 characters का रखें।";
+
+if(e?.code==="permission-denied")
+return"Firebase Rules permission नहीं दे रहे हैं।";
+
+return e?.message||"Unknown error";
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+loadProducts();
+updateCartCount();
+
+</script>
+
+</body>
+</html>
